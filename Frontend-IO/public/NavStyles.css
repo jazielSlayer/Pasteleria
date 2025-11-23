@@ -1,0 +1,566 @@
+.nav {
+    padding: 0 40px;
+    height: 80px;
+    background-color: #8b080885;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.nav_links {
+    position: fixed;
+    left:0;
+    bottom: 0;
+    top: 80px;
+    right: 0;
+    background-color: #0b055f85;
+    display: grid;
+    place-items: center;
+    clip-path: circle(0% at top left);
+    transition: clip-path .4s;
+}
+.nav_link{
+    text-decoration: none;
+    color: #ffffff;
+}
+
+.nav_links:target {
+    clip-path: circle(150% at top left);
+}
+@media (min-width: 768px) {
+  .nav_links {
+    position: static;
+    background-color: transparent;
+    flex-direction: row;
+    clip-path: none;
+    transition: none;
+  }
+
+  .nav_icon {
+    display: none;
+  }
+
+  .nav_link {
+    margin: 0 1rem;
+    font-size: 1rem;
+  }
+}
+
+.admin-nav {
+  transition: transform 0.3s ease-in-out;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 50px; /* Ancho reducido cuando está oculto */
+  background-color: #040c637a;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease;
+  z-index: 10000;
+  overflow: hidden; /* Oculta el contenido que sobresale */
+}
+
+/* Expande el nav al hacer hover */
+.admin-nav:hover {
+  width: 250px;
+}
+
+.nav-header {
+  height: 80px;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 250px; /* Mantiene el ancho mínimo del contenido */
+}
+
+.nav-logo img {
+  height: 40px;
+  opacity: 0; /* Oculta el logo cuando está colapsado */
+  transition: opacity 0.3s ease;
+}
+
+/* Muestra el logo al hacer hover */
+.admin-nav:hover .nav-logo img {
+  opacity: 1;
+}
+
+.nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-width: 250px; /* Mantiene el ancho mínimo del contenido */
+}
+
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.3s;
+  white-space: nowrap;
+}
+
+/* Muestra los links al hacer hover */
+.admin-nav:hover .nav-link {
+  opacity: 1;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.open_submenu {
+  position: relative;
+  z-index: 20;
+  opacity: 0; /* Oculta el icono de usuario cuando está colapsado */
+  transition: opacity 0.3s ease;
+}
+
+/* Muestra el usuario al hacer hover */
+.admin-nav:hover .open_submenu {
+  opacity: 1;
+}
+
+.open_submenu button {
+  display: inline-block;
+  position: relative;
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: 500;
+  padding: 0px 1px;
+  border-radius: 1000px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.open_submenu button:hover {
+  background-color: rgba(154, 0, 209, 0.1);
+}
+
+.open_submenu .fa-solid.fa-chevron-down {
+  margin-left: 5px;
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+.open_submenu .submenu.show ~ .fa-solid.fa-chevron-down {
+  transform: rotate(180deg);
+}
+
+.user-menu {
+  position: relative;
+}
+
+.user-button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.3s;
+}
+
+.user-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.submenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: rgba(24, 6, 93, 0.9);
+  border-radius: 8px;
+  width: 200px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  z-index: 1000;
+}
+
+.submenu.show {
+  max-height: 200px;
+}
+
+.submenu ul {
+  list-style: none;
+  padding: 1rem;
+  margin: 0;
+}
+
+.submenu ul li {
+  padding: 0.5rem 0;
+}
+
+.submenu ul li span {
+  color: white;
+  font-size: 0.9rem;
+}
+
+.submenu ul li button {
+  display: block;
+  width: 75%;
+  background: none;
+  border: none;
+  text-align: center;
+  cursor: pointer;
+}
+
+.submenu ul li button:hover {
+  background-color: rgba(154, 0, 209, 0.1);
+}
+.logout-button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 1.5rem;
+}
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 1.25rem;
+}
+
+.nav-icon {
+  font-size: 1.5rem;
+  min-width: 1.5rem;
+  opacity: 1; /* Siempre visibles */
+  transition: none;
+  margin-right: 0.75rem;
+}
+
+.nav-text {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+}
+
+.admin-nav:hover .nav-text {
+  opacity: 1;
+}
+.user-icon-wrapper {
+  opacity: 1 !important; /* Siempre visible */
+}
+
+.user-icon {
+  font-size: 40px;
+  opacity: 1;
+  transition: none;
+}
+
+.user-link {
+  opacity: 1 !important;
+}
+
+@media (max-width: 768px) {
+  .admin-nav {
+    width: 100%;
+    height: 80px;
+    bottom: auto;
+  }
+  .admin-nav.nav-hidden {
+    transform: translateY(-100%);
+  }
+  /* En móvil no aplicamos el hover, usamos el toggle */
+  .admin-nav:hover {
+    width: 100%;
+  }
+
+  .admin-nav {
+    transition: transform 0.3s ease-in-out, width 0.3s ease, height 0.3s ease;
+  }
+
+  .nav-logo img {
+    opacity: 1; /* Siempre visible en móvil */
+  }
+
+  .nav-collapsed {
+    height: 100vh;
+    z-index: 10001;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+
+  .nav-list {
+    display: none;
+  }
+
+  .nav-collapsed .nav-list {
+    display: flex;
+    margin-top: 1rem;
+  }
+
+  /* En móvil mostramos todo cuando está colapsado (abierto) */
+  .nav-collapsed .nav-link,
+  .nav-collapsed .open_submenu {
+    opacity: 1;
+  }
+}
+
+.nav {
+          padding: 0 40px;
+          height: 80px;
+          background-color: #8b080885;
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .admin-nav {
+          transition: transform 0.3s ease-in-out;
+          position: fixed;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 50px;
+          background-color: #040c637a;
+          display: flex;
+          flex-direction: column;
+          transition: width 0.3s ease;
+          z-index: 10000;
+          overflow: hidden;
+        }
+
+        .admin-nav:hover {
+          width: 250px;
+        }
+
+        .nav-header {
+          height: 80px;
+          padding: 0 1rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          min-width: 250px;
+        }
+
+        .nav-logo img {
+          height: 40px;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .admin-nav:hover .nav-logo img {
+          opacity: 1;
+        }
+
+        .nav-controls {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .nav-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          min-width: 250px;
+        }
+
+        .nav-link {
+          color: white;
+          text-decoration: none;
+          font-size: 1rem;
+          padding: 0.75rem 1rem;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          transition: background-color 0.3s;
+          white-space: nowrap;
+        }
+
+        .nav-link:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+          color: #fff;
+        }
+
+        .nav-icon {
+          font-size: 1.5rem;
+          min-width: 1.5rem;
+          opacity: 1;
+          transition: none;
+          margin-right: 0.75rem;
+        }
+
+        .nav-text {
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          white-space: nowrap;
+        }
+
+        .admin-nav:hover .nav-text {
+          opacity: 1;
+        }
+
+        .menu-toggle {
+          display: none;
+          background: none;
+          border: none;
+          color: white;
+          cursor: pointer;
+          font-size: 1.25rem;
+        }
+
+        .user-icon-wrapper {
+          opacity: 1 !important;
+        }
+
+        .user-link {
+          opacity: 1 !important;
+        }
+
+        /* Estilos del submenú */
+        .nav-submenu-trigger {
+          color: white;
+          text-decoration: none;
+          font-size: 1rem;
+          padding: 0.75rem 1rem;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          transition: background-color 0.3s;
+          white-space: nowrap;
+          background: none;
+          border: none;
+          width: 100%;
+          cursor: pointer;
+        }
+
+        .nav-submenu-trigger:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .submenu-trigger-content {
+          display: flex;
+          align-items: center;
+          flex: 1;
+        }
+
+        .submenu-chevron {
+          font-size: 0.875rem;
+          transition: transform 0.3s ease;
+          opacity: 0;
+        }
+
+        .admin-nav:hover .submenu-chevron {
+          opacity: 1;
+        }
+
+        .nav-submenu-trigger.active .submenu-chevron {
+          transform: rotate(180deg);
+        }
+
+        .nav-submenu {
+          max-height: 0;
+          overflow: hidden;
+          transition: max-height 0.3s ease;
+          padding-left: 0;
+        }
+
+        .nav-submenu.open {
+          max-height: 300px;
+        }
+
+        .nav-submenu .nav-link {
+          padding-left: 3.25rem;
+          font-size: 0.95rem;
+        }
+
+        .nav-submenu .nav-icon {
+          font-size: 1.25rem;
+        }
+
+        @media (max-width: 768px) {
+          .admin-nav {
+            width: 100%;
+            height: 80px;
+            bottom: auto;
+          }
+
+          .admin-nav.nav-hidden {
+            transform: translateY(-100%);
+          }
+
+          .admin-nav:hover {
+            width: 100%;
+          }
+
+          .admin-nav {
+            transition: transform 0.3s ease-in-out, width 0.3s ease, height 0.3s ease;
+          }
+
+          .nav-logo img {
+            opacity: 1;
+          }
+
+          .nav-collapsed {
+            height: 100vh;
+            z-index: 10001;
+          }
+
+          .menu-toggle {
+            display: block;
+          }
+
+          .nav-list {
+            display: none;
+          }
+
+          .nav-collapsed .nav-list {
+            display: flex;
+            margin-top: 1rem;
+          }
+
+          .nav-collapsed .nav-link,
+          .nav-collapsed .nav-text,
+          .nav-collapsed .submenu-chevron {
+            opacity: 1;
+          }
+        }
+
+.logoutButtonStyle {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-Size: 1.5rem;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  text-Align: left;
+  display: "flex";
+  align-Items: "center";
+  border-Radius: "6px";
+  transition: "background-color 0.3s"
+}

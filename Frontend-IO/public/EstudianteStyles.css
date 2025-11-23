@@ -1,0 +1,32 @@
+.EstudianteContainer {
+    color: #fff;
+}
+.Title {
+    text-align: center;
+}
+
+
+.Progress {
+    display: grid;
+    place-items: center;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    cursor: default;
+    position: absolute;
+    left: 20%;
+    
+}
+.Progress.Section {
+   color: aqua;
+   background: conic-gradient(#0c5a6e 0% 20%, #303238 20% 100%);
+}
+
+.Progress-Bar {
+    display: grid;
+    place-items: center;
+    width: 165px;
+    height: 165px;
+    border-radius: 50%;
+    background: #1d1e22;
+}

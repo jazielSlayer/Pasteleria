@@ -1,0 +1,183 @@
+body {
+  font-family: 'Rubik', sans-serif;
+  position: relative
+}
+
+.containerTab {
+  color: #fff;
+  min-height: 100vh;
+  padding: "20px";
+  font-Family: 'Arial', sans-serif;
+}
+
+
+
+header {
+  position: relative;
+  width: 100%;
+  min-height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10; /* Asegura que el header esté por encima de otros elementos, pero debajo del submenú */
+}
+
+header nav ul {
+  display: flex;
+  gap: 10px;
+  list-style: none;
+}
+
+header nav a {
+  font-size: 14px;
+  margin-left: 6px;
+}
+
+
+
+div {
+  scrollbar-width: none;
+  
+}
+
+th {
+  scrollbar-width: none;
+}
+
+td {
+  /* For Firefox */
+  scrollbar-width: thin; /* Keeps the scrollbar slim */
+  scrollbar-color: #66626271 #f1f1f100; /* thumb color, track color */
+}
+
+/* For Chrome, Edge, and Safari */
+td::-webkit-scrollbar {
+  width: 1px; /* Matches your 1px width */
+}
+
+
+
+ul,
+li {
+  list-style: none;
+  white-space: nowrap;
+}
+
+li {
+  display: inline;
+}
+
+img {
+  margin-top: -16px;
+}
+
+/* Main container */
+
+.main-container {
+  width: 1200px;
+  height: 700px;
+  margin: 0 auto;
+}
+
+/* Slider container */
+.slider-container {
+  position: relative;
+  height: 100%
+}
+
+/* dots carrusel */
+.dots-container {
+  display: flex;
+  justify-content: center;
+}
+
+.dot-container-item {
+  margin: 8px 3px;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+}
+
+/* Arrows */
+.leftArrow {
+  position: absolute;
+  top: 50%;
+  transform: translate(0, -50%);
+  left: 32px;
+  font-size: 50px;
+  font-weight: 700;
+  color: #fff;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.rightArrow {
+  position: absolute;
+  top: 50%;
+  transform: translate(0, -50%);
+  right: 32px;
+  font-size: 50px;
+  font-weight: 700;
+  color: #fff;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.container-images {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  border: 1px solid #000000;
+  overflow: hidden;
+}
+
+div.active {
+  background: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  color: #ffffff;
+}
+
+.table-container {
+  overflow-x: auto; /* Permite scroll horizontal en pantallas pequeñas */
+  max-width: 100%; /* Asegura que no desborde el contenedor padre */
+}
+
+table{
+  width: 100%;
+  table-layout: fixed;
+}
+
+th, td {
+  text-align: left; /* Alineación del texto */
+  overflow-x: auto; /* Scroll horizontal para contenido largo */
+  white-space: nowrap; /* Evita salto de línea en contenido largo */
+}
+
+.container {
+  color: #fff;
+  min-height: 100vh;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  width: 100%;
+}
+
+.title {
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 28px;
+}
+
+.loadingText {
+  text-align: center;
+  font-size: 18px;
+}
+
+.errorText {
+  color: red;
+  text-align: center;
+  font-size: 16px;
+}

@@ -1,0 +1,142 @@
+/* ...existing code... */
+
+/* Container & title */
+.admin-page {
+  color: #fff;
+  box-sizing: border-box;
+}
+.admin-title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0,0,0,1);
+}
+
+/* Messages */
+.admin-error {
+  background-color: rgba(244, 67, 54, 0.2);
+  color: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.admin-loading {
+  text-align: center;
+  color: #fff;
+  padding: 20px;
+}
+
+/* Grid layout */
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(100px, auto);
+  gap: 20px;
+  padding: 20px;
+  border-radius: 15px;
+}
+
+/* Helpers for spanning columns */
+.span-2 { grid-column: span 2; }
+.span-4 { grid-column: span 4; }
+
+/* Stat widget */
+.stat-widget {
+  padding: 12px;
+  border-radius: 10px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 120px;
+}
+.stat-title {
+  color: #fff;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+.stat-value {
+  font-size: 2rem;
+  color: #fff;
+  margin: 6px 0;
+  word-break: break-word;
+}
+.stat-desc {
+  color: #aaa;
+  font-size: 0.875rem;
+}
+
+
+.chart-widget {
+  padding: 18px;
+  border-radius: 10px;
+  box-sizing: border-box;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 220px;
+}
+.chart-title {
+  color: #fff;
+  margin: 0;
+  font-size: 1rem;
+}
+.chart-canvas-wrapper {
+  width: 100%;
+  flex: 1 1 auto;
+  position: relative;
+  min-height: 160px;
+}
+.chart-canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+
+.large-chart .chart-widget {
+  min-height: 420px;
+  padding: 24px;
+}
+
+
+@media (max-width: 1200px) {
+  .admin-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .span-2 { grid-column: span 3; }
+  .span-4 { grid-column: span 3; }
+}
+
+@media (max-width: 900px) {
+  .admin-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .span-2 { grid-column: span 2; }
+  .span-4 { grid-column: span 2; }
+  .chart-canvas-wrapper { min-height: 180px; }
+  .stat-value { font-size: 1.6rem; }
+}
+
+@media (max-width: 600px) {
+  .admin-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+  .span-2, .span-4 { grid-column: auto; }
+  .chart-canvas-wrapper { min-height: 200px; }
+  .admin-title { font-size: 1.5rem; }
+  .stat-value { font-size: 1.4rem; }
+  .large-chart .chart-widget { min-height: 320px; }
+}
+
+
+@media (prefers-color-scheme: dark) {
+  .stat-desc { color: #bfbfbf; }
+}
+

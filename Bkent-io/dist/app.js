@@ -1,0 +1,46 @@
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+var _express = _interopRequireDefault(require("express"));
+var _cors = _interopRequireDefault(require("cors"));
+var _morgan = _interopRequireDefault(require("morgan"));
+var _swaggerJsdoc = _interopRequireDefault(require("swagger-jsdoc"));
+var _swaggerUiExpress = _interopRequireDefault(require("swagger-ui-express"));
+var _swaggerOptions = require("./swaggerOptions");
+var _Proovedor = _interopRequireDefault(require("./routes/Proovedor"));
+var _MateriasPrimas = _interopRequireDefault(require("./routes/MateriasPrimas"));
+var _compras = _interopRequireDefault(require("./routes/compras"));
+var _Productos = _interopRequireDefault(require("./routes/Productos"));
+var _Receta = _interopRequireDefault(require("./routes/Receta"));
+var _MovimientoInventario = _interopRequireDefault(require("./routes/MovimientoInventario"));
+var _ProduccionDiaria = _interopRequireDefault(require("./routes/ProduccionDiaria"));
+var _Clientes = _interopRequireDefault(require("./routes/Clientes"));
+var _Promociones = _interopRequireDefault(require("./routes/Promociones"));
+var _Venta = _interopRequireDefault(require("./routes/Venta"));
+var _Vistas = _interopRequireDefault(require("./routes/Vistas"));
+var _Pdfs = _interopRequireDefault(require("./routes/Pdfs"));
+var _ArchivosRoutes = _interopRequireDefault(require("./routes/ArchivosRoutes"));
+var specs = (0, _swaggerJsdoc["default"])(_swaggerOptions.options);
+var app = (0, _express["default"])();
+app.use((0, _cors["default"])());
+app.use((0, _morgan["default"])('dev'));
+app.use(_express["default"].json());
+app.use(_Proovedor["default"]);
+app.use(_MateriasPrimas["default"]);
+app.use(_compras["default"]);
+app.use(_Productos["default"]);
+app.use(_Receta["default"]);
+app.use(_MovimientoInventario["default"]);
+app.use(_ProduccionDiaria["default"]);
+app.use(_Clientes["default"]);
+app.use(_Promociones["default"]);
+app.use(_Venta["default"]);
+app.use(_Vistas["default"]);
+app.use(_Pdfs["default"]);
+app.use(_ArchivosRoutes["default"]);
+app.use('/docs', _swaggerUiExpress["default"].serve, _swaggerUiExpress["default"].setup(specs));
+var _default = exports["default"] = app;

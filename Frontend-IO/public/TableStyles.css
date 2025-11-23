@@ -1,0 +1,215 @@
+
+.tableContainer {
+  overflow-x: auto;
+  margin-bottom: 30px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tableHead {
+  background-color: #333;
+}
+
+.tableHeader {
+  padding: 15px;
+  border-bottom: 2px solid #555;
+  text-align: left;
+}
+
+.tableRow {
+  border-bottom: 1px solid #555;
+}
+
+.tableRowAlternate {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.tableCell {
+  padding: 12px;
+}
+
+.tableCellBold {
+  padding: 12px;
+  font-weight: bold;
+}
+
+.actionContainer {
+  display: flex;
+  gap: 8px;
+}
+
+.editButton {
+  padding: 6px 12px;
+  background-color: #2196F3;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.deleteButton {
+  padding: 6px 12px;
+  background-color: #F44336;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.formContainer {
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 25px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.formTitle {
+  margin-bottom: 20px;
+  font-size: 22px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.formLabel {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.formInput {
+  width: 100%;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #555;
+  background-color: #222;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+.formButtonContainer {
+  display: flex;
+  gap: 10px;
+}
+
+.submitButton {
+  padding: 12px 24px;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.submitButtonCreate {
+  background-color: #4CAF50;
+}
+
+.submitButtonUpdate {
+  background-color: #2196F3;
+}
+.PDF {
+  background-color: #9b0f0f;
+}
+
+.cancelButton {
+  padding: 12px 24px;
+  background-color: #F44336;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.statsContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.statCard {
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.statCardTotal {
+  background-color: rgba(76, 175, 80, 0.2);
+}
+
+.statCardTipos {
+  background-color: rgba(33, 150, 243, 0.2);
+}
+
+.statTitle {
+  margin: 0 0 10px 0;
+}
+
+.statTitleTotal {
+  color: #4CAF50;
+}
+
+.statTitleTipos {
+  color: #2196F3;
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.noDataText {
+  padding: 20px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.tableCellCenter {
+  padding: "12px";
+  text-align: "center";
+}
+.tableHeaderCenter {
+  padding: "15px";
+  border-bottom: "2px solid #555";
+  text-align: "center";
+}
+
+.statusBadge {
+      padding: "4px 8px";
+      border-radius: "4px";
+      color: "white";
+      font-size: "12px";
+}
+.statusActive {
+      color: #4CAF50;
+}
+.statusInactive {
+      color: #F44336;
+}
+.statCardPermanente {
+      background-Color: rgba(255, 152, 0, 0.2);
+}
+.statusTemporal {
+    color: #FF9800;
+}
+
+.statusPermanente {
+      color: #4CAF50;
+}
