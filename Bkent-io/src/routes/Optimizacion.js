@@ -1,78 +1,67 @@
-// src/routes/optimization.routes.js
-import { Router } from 'express';
+import express from 'express';
 import { 
-    maximizarProduccion, 
-    minimizarCostos, 
-    optimizacionPersonalizada 
+  optimizarProduccion, 
+  analizarSensibilidad,
+  planificarProduccionPeriodo 
 } from '../controlers/ProduccionOptima.js';
 
-const router = Router();
+const router = express.Router();
 
-/**
- * POST /api/optimization/maximizar
- * Maximiza la utilidad de producción según stock disponible
- * 
- * Body (opcional):
- * {
- *   "restriccionesDemanda": [
- *     {"producto_id": 1, "cantidad_maxima": 50},
- *     {"producto_id": 2, "cantidad_maxima": 300}
- *   ]
- * }
- */
-router.post('/optimizacion/maximizar', maximizarProduccion);
+// Endpoint principal
+router.get('/optimizar-produccion', async (req, res) => {
+  try {
+    const resultado = await optimizarProduccion();
+    res.json(resultado);
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
+  }
+});
 
-/**
- * POST /api/optimization/minimizar
- * Minimiza costos de producción cumpliendo demanda
- * 
- * Body:
- * {
- *   "demanda": [
- *     {"producto_id": 1, "cantidad_requerida": 50},
- *     {"producto_id": 2, "cantidad_requerida": 120}
- *   ]
- * }
- */
-router.post('/optimizacion/minimizar', minimizarCostos);
+// Análisis de sensibilidad
+router.post('/analisis-sensibilidad', async (req, res) => {
+  try {
+    const { recurso, incremento } = req.body;
+    
+    if (!recurso || incremento === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'Se requieren los campos: recurso e incremento'
+      });
+    }
+    
+    const resultado = await analizarSensibilidad(recurso, parseFloat(incremento));
+    res.json(resultado);
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
+  }
+});
 
-/**
- * POST /api/optimization/personalizada
- * Resuelve un problema de programación lineal personalizado
- * 
- * Body:
- * {
- *   "tipo": "maximizar",  // o "minimizar"
- *   "funcion_objetivo": "Maximizar utilidad",
- *   "variables": [
- *     {"nombre": "x1", "coeficiente": 40},
- *     {"nombre": "x2", "coeficiente": 8},
- *     {"nombre": "x3", "coeficiente": 2}
- *   ],
- *   "restricciones": [
- *     {
- *       "nombre": "Mano_de_obra",
- *       "tipo": "<=",
- *       "valor": 40,
- *       "coeficientes": [
- *         {"variable": "x1", "valor": 2},
- *         {"variable": "x2", "valor": 0.2},
- *         {"variable": "x3", "valor": 0.1}
- *       ]
- *     },
- *     {
- *       "nombre": "Horno",
- *       "tipo": "<=",
- *       "valor": 12,
- *       "coeficientes": [
- *         {"variable": "x1", "valor": 1.5},
- *         {"variable": "x2", "valor": 0.1},
- *         {"variable": "x3", "valor": 0.05}
- *       ]
- *     }
- *   ]
- * }
- */
-router.post('/optimizacion/personalizada', optimizacionPersonalizada);
+// Planificación por periodo
+router.get('/planificar-periodo/:dias', async (req, res) => {
+  try {
+    const dias = parseInt(req.params.dias);
+    
+    if (isNaN(dias) || dias < 1 || dias > 365) {
+      return res.status(400).json({
+        success: false,
+        message: 'Los días deben ser un número entre 1 y 365'
+      });
+    }
+    
+    const resultado = await planificarProduccionPeriodo(dias);
+    res.json(resultado);
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
+  }
+});
 
 export default router;

@@ -1,4 +1,3 @@
-// src/controlers/Clientes.js  → Versión 100% funcional con tu BD real
 import { connect } from '../database';
 
 export const getClientes = async (req, res) => {
@@ -131,7 +130,7 @@ export const deleteCliente = async (req, res) => {
     if (isNaN(id)) return res.status(400).json({ message: 'ID inválido' });
 
     try {
-        // Si tiene ventas, solo desactivar (opcional: podrías añadir campo activo)
+        
         const [ventas] = await pool.query('SELECT COUNT(*) as total FROM ventas WHERE cliente_id = ?', [id]);
         if (ventas[0].total > 0) {
             return res.json({ message: 'No se puede eliminar: el cliente tiene ventas asociadas' });

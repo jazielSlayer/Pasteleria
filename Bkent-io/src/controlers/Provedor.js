@@ -1,7 +1,5 @@
-// src/controlers/Provedor.js
 import { connect } from '../database';
 
-/* ==================== OBTENER TODOS LOS PROVEEDORES ==================== */
 export const getProveedores = async (req, res) => {
     const pool = await connect();
     try {
@@ -29,7 +27,6 @@ export const getProveedores = async (req, res) => {
     }
 };
 
-/* ==================== OBTENER UN PROVEEDOR POR ID ==================== */
 export const getProveedor = async (req, res) => {
     const pool = await connect();
     try {
@@ -57,7 +54,6 @@ export const getProveedor = async (req, res) => {
     }
 };
 
-/* ==================== CREAR NUEVO PROVEEDOR ==================== */
 export const createProveedor = async (req, res) => {
     const pool = await connect();
     const {
@@ -95,7 +91,6 @@ export const createProveedor = async (req, res) => {
     }
 };
 
-/* ==================== ACTUALIZAR PROVEEDOR ==================== */
 export const updateProveedor = async (req, res) => {
     const pool = await connect();
     const id = req.params.id;
@@ -134,7 +129,6 @@ export const updateProveedor = async (req, res) => {
     }
 };
 
-/* ==================== DESACTIVAR PROVEEDOR ==================== */
 export const deleteProveedor = async (req, res) => {
     const pool = await connect();
     const id = req.params.id;

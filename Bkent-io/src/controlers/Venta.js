@@ -1,6 +1,5 @@
 import { connect } from '../database';
 
-/* ==================== LISTAR VENTAS (con filtros) ==================== */
 export const getVentas = async (req, res) => {
     const pool = await connect();
     const { fecha, cliente_id } = req.query;
@@ -45,7 +44,6 @@ export const getVentas = async (req, res) => {
     }
 };
 
-/* ==================== OBTENER VENTA + DETALLE ==================== */
 export const getVenta = async (req, res) => {
     const pool = await connect();
     const id = parseInt(req.params.id);
@@ -91,7 +89,6 @@ export const getVenta = async (req, res) => {
     }
 };
 
-/* ==================== CREAR VENTA (CORREGIDO PARA TU SISTEMA REAL) ==================== */
 export const createVenta = async (req, res) => {
     const pool = await connect();
     const connection = await pool.getConnection();
@@ -197,7 +194,6 @@ export const createVenta = async (req, res) => {
     }
 };
 
-/* ==================== ANULAR VENTA (solo del día actual) ==================== */
 export const anularVenta = async (req, res) => {
     const pool = await connect();
     const connection = await pool.getConnection();

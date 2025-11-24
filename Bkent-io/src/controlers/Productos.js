@@ -1,6 +1,5 @@
 import { connect } from '../database';
 
-/* ==================== LISTAR TODOS LOS PRODUCTOS ==================== */
 export const getProductos = async (req, res) => {
     const pool = await connect();
     try {
@@ -29,7 +28,6 @@ export const getProductos = async (req, res) => {
     }
 };
 
-/* ==================== OBTENER UN PRODUCTO POR ID ==================== */
 export const getProducto = async (req, res) => {
     const pool = await connect();
     const id = parseInt(req.params.id);
@@ -62,7 +60,6 @@ export const getProducto = async (req, res) => {
     }
 };
 
-/* ==================== BUSCAR PRODUCTO POR CÓDIGO (ideal para punto de venta) ==================== */
 export const getProductoByCodigo = async (req, res) => {
     const pool = await connect();
     const { codigo } = req.query;
@@ -94,7 +91,6 @@ export const getProductoByCodigo = async (req, res) => {
     }
 };
 
-/* ==================== CREAR NUEVO PRODUCTO ==================== */
 export const createProducto = async (req, res) => {
     const pool = await connect();
     const {
@@ -157,7 +153,6 @@ export const createProducto = async (req, res) => {
     }
 };
 
-/* ==================== ACTUALIZAR PRODUCTO ==================== */
 export const updateProducto = async (req, res) => {
     const pool = await connect();
     const id = parseInt(req.params.id);
@@ -237,7 +232,6 @@ export const updateProducto = async (req, res) => {
     }
 };
 
-/* ==================== ELIMINAR / DESACTIVAR PRODUCTO ==================== */
 export const deleteProducto = async (req, res) => {
     const pool = await connect();
     const id = parseInt(req.params.id);

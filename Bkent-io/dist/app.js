@@ -21,6 +21,7 @@ var _ProduccionDiaria = _interopRequireDefault(require("./routes/ProduccionDiari
 var _Clientes = _interopRequireDefault(require("./routes/Clientes"));
 var _Promociones = _interopRequireDefault(require("./routes/Promociones"));
 var _Venta = _interopRequireDefault(require("./routes/Venta"));
+var _Optimizacion = _interopRequireDefault(require("./routes/Optimizacion"));
 var _Vistas = _interopRequireDefault(require("./routes/Vistas"));
 var _Pdfs = _interopRequireDefault(require("./routes/Pdfs"));
 var _ArchivosRoutes = _interopRequireDefault(require("./routes/ArchivosRoutes"));
@@ -39,6 +40,7 @@ app.use(_ProduccionDiaria["default"]);
 app.use(_Clientes["default"]);
 app.use(_Promociones["default"]);
 app.use(_Venta["default"]);
+app.use(_Optimizacion["default"]);
 app.use(_Vistas["default"]);
 app.use(_Pdfs["default"]);
 app.use(_ArchivosRoutes["default"]);

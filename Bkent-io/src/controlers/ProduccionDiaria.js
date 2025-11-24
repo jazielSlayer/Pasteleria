@@ -1,6 +1,5 @@
 import { connect } from '../database';
 
-/* ==================== LISTAR PRODUCCIÓN DIARIA ==================== */
 export const getProduccionDiaria = async (req, res) => {
     const pool = await connect();
     const { fecha, producto_id } = req.query;
@@ -47,7 +46,6 @@ export const getProduccionDiaria = async (req, res) => {
     }
 };
 
-/* ==================== OBTENER UNA PRODUCCIÓN POR ID ==================== */
 export const getProduccion = async (req, res) => {
     const pool = await connect();
     const id = parseInt(req.params.id);
@@ -84,7 +82,6 @@ export const getProduccion = async (req, res) => {
     }
 };
 
-/* ==================== REGISTRAR PRODUCCIÓN DIARIA (con descuento automático de insumos) ==================== */
 export const createProduccion = async (req, res) => {
     const pool = await connect();
     const connection = await pool.getConnection();
@@ -206,7 +203,6 @@ export const createProduccion = async (req, res) => {
     }
 };
 
-/* ==================== ANULAR PRODUCCIÓN (revierte insumos - solo del día actual) ==================== */
 export const anularProduccion = async (req, res) => {
     const pool = await connect();
     const connection = await pool.getConnection();

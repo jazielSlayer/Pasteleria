@@ -1,178 +1,272 @@
-@baseUrl = http://localhost:3200
+@baseUrl = http://localhost:3400
+
+### ============================================
+### OPTIMIZACIÓN DE PRODUCCIÓN - ENDPOINTS
+### ============================================
+
+### 1. Optimización Básica
+### Obtiene el plan de producción óptimo del día
+GET {{baseUrl}}/optimizar-produccion
+Content-Type: application/json
 
 ###
-# ===Funciona Todas las operaciones de persona
-# === Rutas para persona ===
-# Obtener todas las personas
-GET {{baseUrl}}/personas
 
-###
-# Obtener una persona por ID
-GET {{baseUrl}}/personas/1
-
-###
-# Crear una nueva persona
-POST {{baseUrl}}/personas
+### 2. Análisis de Sensibilidad - Aumentar HORNO
+### Analiza qué pasaría si se aumenta la capacidad del horno
+POST {{baseUrl}}/analisis-sensibilidad
 Content-Type: application/json
 
 {
-  "nombres": "Estudiante3",
-  "apellidopat": "Deyvid",
-  "apellidomat": "Tony",
-  "carnet": "02830328398",
-  "direccion": "Calle Falsa 1234",
-  "telefono": "123456789",
-  "correo": "juan.perez@example.com",
-  "fecha_nacimiento": "1990-01-01",
-  "estado": true
+  "recurso": "MANO_OBRA",
+  "incremento": 2
 }
 
 ###
-# Actualizar una persona
-PUT {{baseUrl}}/personas/3
+
+### 3. Análisis de Sensibilidad - Aumentar MANO_OBRA
+### Analiza el impacto de contratar más personal
+POST {{baseUrl}}/analisis-sensibilidad
 Content-Type: application/json
 
 {
-  "nombres": "Juan Pedrito",
-  "apellidopat": "Choque",
-  "apellidomat": "López",
-  "carnet": "87654321",
-  "direccion": "Avenida Siempre Viva 500",
-  "telefono": "98465644956",
-  "correo": "juan.Choque@example.com",
-  "fecha_nacimiento": "1990-02-01",
-  "estado": false
+  "recurso": "HORNO",
+  "incremento": 8
 }
 
 ###
-# Eliminar una persona
-DELETE {{baseUrl}}/personas/3
 
-
-
-###
-# === Rutas para user ===
-# Obtener todos los usuarios
-GET {{baseUrl}}/users
-
-###
-# Obtener un usuario por ID
-GET {{baseUrl}}/users/1
-
-
-###
-POST {{baseUrl}}/users
+### 4. Análisis de Sensibilidad - Aumentar HARINA_KG
+### Analiza el impacto de comprar más harina
+POST {{baseUrl}}/analisis-sensibilidad
 Content-Type: application/json
 
 {
-  "nombres": "Pablo",
-  "apellidopat": "Picazo",
-  "apellidomat": "Gómez",
-  "carnet": "123456789",
-  "email": "juan.perez@example.com",
-  "user_name": "johnPicazo",
+  "recurso": "HARINA_KG",
+  "incremento": 10
 }
+
 ###
-# Actualizar un usuario
-PUT {{baseUrl}}/users/1
+
+### 5. Análisis de Sensibilidad - Reducir recursos
+### Analiza qué pasaría si se reduce la capacidad
+POST {{baseUrl}}/analisis-sensibilidad
 Content-Type: application/json
 
 {
-  "per_id": 10,
-  "nombres": "Pablo",
-  "apellidopat": "Picazo",
-  "apellidomat": "Gómez",
-  "carnet": "123456789"
+  "recurso": "HORNO",
+  "incremento": -5
 }
 
 ###
-# Eliminar un usuario
-DELETE {{baseUrl}}/users/2
 
+### 6. Planificación Semanal (7 días)
+### Calcula la producción óptima para una semana
+GET {{baseUrl}}/planificar-periodo/7
+Content-Type: application/json
+
+###
+
+### 7. Planificación Mensual (30 días)
+### Calcula la producción óptima para un mes
+GET {{baseUrl}}/planificar-periodo/30
+Content-Type: application/json
 
 ###
 
-# === Rutas para docente ===
-# Obtener todos los docentes
-GET {{baseUrl}}/docentes
+### 8. Planificación Trimestral (90 días)
+### Calcula la producción óptima para tres meses
+GET {{baseUrl}}/planificar-periodo/90
+Content-Type: application/json
 
 ###
-# Obtener un docente por ID
-GET {{baseUrl}}/docentes/1
+
+### 9. Planificación Diaria (1 día)
+### Equivalente a la optimización básica pero con formato de periodo
+GET {{baseUrl}}/planificar-periodo/1
+Content-Type: application/json
 
 ###
-# Crear un nuevo docente
-POST {{baseUrl}}/docentes
+
+### ============================================
+### EJEMPLOS DE PRUEBAS ADICIONALES
+### ============================================
+
+### 10. Análisis con múltiples recursos
+### Analiza AZUCAR_KG
+POST {{baseUrl}}/analisis-sensibilidad
 Content-Type: application/json
 
 {
-  "per_id": 5,
-  "numero_item": "DOC124",
-  "especialidad": "Matemáticas",
-  "tipo_contrato": "permanente",
-  "estado": true
+  "recurso": "AZUCAR_KG",
+  "incremento": 5
 }
 
 ###
-# Actualizar un docente
-PUT {{baseUrl}}/docentes/1
+
+### 11. Análisis MANTEQUILLA_KG
+POST http://localhost:3000/api/analisis-sensibilidad
 Content-Type: application/json
 
 {
-  "per_id": 5,
-  "numero_item": "DOC124",
-  "especialidad": "Física",
-  "tipo_contrato": "temporal",
-  "estado": false
+  "recurso": "MANTEQUILLA_KG",
+  "incremento": 3
 }
 
 ###
-# Eliminar un docente
-DELETE {{baseUrl}}/docentes/2
+
+### 12. Planificación Quincenal (15 días)
+GET http://localhost:3000/api/planificar-periodo/15
+Content-Type: application/json
 
 ###
 
-# === Rutas para estudiante ===
-# Obtener todos los estudiantes
-GET {{baseUrl}}/estudiantes
+### 13. Planificación Bimestral (60 días)
+GET http://localhost:3000/api/planificar-periodo/60
+Content-Type: application/json
 
 ###
-# Obtener un estudiante por ID
-GET {{baseUrl}}/estudiante/evaluacion/25
 
-###
-# Crear un nuevo estudiante
-POST {{baseUrl}}/estudiantes
+### ============================================
+### CASOS DE PRUEBA - VALIDACIONES
+### ============================================
+
+### 14. Error: Recurso no existe
+POST http://localhost:3000/api/analisis-sensibilidad
 Content-Type: application/json
 
 {
-  "per_id": 8,
-  "id_programa_academico": 1,
-  "numero_matricula": "dihiwdiwd",
-  "fecha_inscripcion": "2025-01-15",
-  "estado": true
+  "recurso": "RECURSO_INEXISTENTE",
+  "incremento": 5
 }
 
 ###
-# Actualizar un estudiante
-PUT {{baseUrl}}/estudiantes/5
+
+### 15. Error: Falta parámetro recurso
+POST http://localhost:3000/api/analisis-sensibilidad
 Content-Type: application/json
 
 {
-  "per_id": 6,
-  "id_programa_academico": 1,
-  "numero_matricula": "EST124",
-  "fecha_inscripcion": "2025-02-01",
-  "estado": false
+  "incremento": 5
 }
 
 ###
-# Eliminar un estudiante
-DELETE {{baseUrl}}/estudiantes/6
-###
-POST {{baseUrl}}/users/role-by-email
+
+### 16. Error: Falta parámetro incremento
+POST http://localhost:3000/api/analisis-sensibilidad
 Content-Type: application/json
 
 {
-  "email": "xd@gmail.com"
+  "recurso": "HORNO"
 }
+
+###
+
+### 17. Error: Días inválidos (0)
+GET http://localhost:3000/api/planificar-periodo/0
+Content-Type: application/json
+
+###
+
+### 18. Error: Días inválidos (negativo)
+GET http://localhost:3000/api/planificar-periodo/-5
+Content-Type: application/json
+
+###
+
+### 19. Error: Días inválidos (más de 365)
+GET http://localhost:3000/api/planificar-periodo/500
+Content-Type: application/json
+
+###
+
+### ============================================
+### ANÁLISIS COMPARATIVOS
+### ============================================
+
+### 20. Comparar incremento pequeño vs grande en HORNO
+### Primero: incremento pequeño
+POST http://localhost:3000/api/analisis-sensibilidad
+Content-Type: application/json
+
+{
+  "recurso": "HORNO",
+  "incremento": 0.5
+}
+
+###
+
+### 21. Segundo: incremento grande
+POST http://localhost:3000/api/analisis-sensibilidad
+Content-Type: application/json
+
+{
+  "recurso": "HORNO",
+  "incremento": 5
+}
+
+###
+
+### 22. Análisis de varios incrementos en MANO_OBRA
+### Incremento de 5 horas
+POST http://localhost:3000/api/analisis-sensibilidad
+Content-Type: application/json
+
+{
+  "recurso": "MANO_OBRA",
+  "incremento": 5
+}
+
+###
+
+### 23. Incremento de 10 horas
+POST http://localhost:3000/api/analisis-sensibilidad
+Content-Type: application/json
+
+{
+  "recurso": "MANO_OBRA",
+  "incremento": 10
+}
+
+###
+
+### 24. Incremento de 20 horas
+POST http://localhost:3000/api/analisis-sensibilidad
+Content-Type: application/json
+
+{
+  "recurso": "MANO_OBRA",
+  "incremento": 20
+}
+
+###
+
+### ============================================
+### NOTAS DE USO
+### ============================================
+
+# OPTIMIZACIÓN BÁSICA:
+# - Devuelve el plan óptimo de producción para 1 día
+# - Muestra qué productos producir y en qué cantidad
+# - Indica recursos saturados y con holgura
+# - Incluye recomendaciones inteligentes
+
+# ANÁLISIS DE SENSIBILIDAD:
+# - Recurso: nombre exacto del recurso (HORNO, MANO_OBRA, etc.)
+# - Incremento: puede ser positivo (aumentar) o negativo (reducir)
+# - Devuelve el ROI por cada unidad adicional del recurso
+# - Útil para decidir en qué invertir
+
+# PLANIFICACIÓN POR PERIODO:
+# - Días: entre 1 y 365
+# - Multiplica la producción diaria óptima por el número de días
+# - Útil para proyecciones y planificación de compras
+# - Calcula necesidades totales de recursos
+
+# RECURSOS DISPONIBLES:
+# - MANO_OBRA (horas de trabajo)
+# - HORNO (horas de horneado)
+# - HARINA_KG (kilogramos)
+# - AZUCAR_KG (kilogramos)
+# - MANTEQUILLA_KG (kilogramos)
+
+###

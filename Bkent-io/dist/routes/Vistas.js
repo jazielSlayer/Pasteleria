@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports["default"] = void 0;
 var _express = require("express");
 var _Vistas = require("../controlers/Vistas");
+var _ProduccionOptima = require("../controlers/ProduccionOptima.js");
 var router = (0, _express.Router)();
 /**
  * @swagger

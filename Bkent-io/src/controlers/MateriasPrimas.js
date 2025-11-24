@@ -55,7 +55,7 @@ export const getMateriaPrima = async (req, res) => {
     }
 };
 
-/* ==================== BUSCAR MATERIA PRIMA POR CÓDIGO (útil en compras) ==================== */
+
 export const getMateriaPrimaByCodigo = async (req, res) => {
     const pool = await connect();
     const { codigo } = req.query;
@@ -84,7 +84,7 @@ export const getMateriaPrimaByCodigo = async (req, res) => {
     }
 };
 
-/* ==================== CREAR NUEVA MATERIA PRIMA ==================== */
+
 export const createMateriaPrima = async (req, res) => {
     const pool = await connect();
     const {
@@ -156,7 +156,7 @@ export const createMateriaPrima = async (req, res) => {
     }
 };
 
-/* ==================== ACTUALIZAR MATERIA PRIMA ==================== */
+
 export const updateMateriaPrima = async (req, res) => {
     const pool = await connect();
     const id = parseInt(req.params.id);
@@ -235,7 +235,7 @@ export const updateMateriaPrima = async (req, res) => {
     }
 };
 
-/* ==================== ELIMINAR MATERIA PRIMA (solo si no tiene movimientos) ==================== */
+
 export const deleteMateriaPrima = async (req, res) => {
     const pool = await connect();
     const id = parseInt(req.params.id);

@@ -1,6 +1,5 @@
 import { connect } from '../database';
 
-/* ==================== LISTAR TODAS LAS RECETAS (con producto y costo) ==================== */
 export const getRecetas = async (req, res) => {
     const pool = await connect();
     try {
@@ -29,7 +28,6 @@ export const getRecetas = async (req, res) => {
     }
 };
 
-/* ==================== OBTENER RECETA COMPLETA POR PRODUCTO_ID O RECETA_ID ==================== */
 export const getReceta = async (req, res) => {
     const pool = await connect();
     const id = parseInt(req.params.id);
@@ -107,7 +105,6 @@ export const getReceta = async (req, res) => {
     }
 };
 
-/* ==================== CREAR RECETA COMPLETA (cabezera + ingredientes) ==================== */
 export const createReceta = async (req, res) => {
     const pool = await connect();
     const connection = await pool.getConnection();
@@ -194,7 +191,6 @@ export const createReceta = async (req, res) => {
     }
 };
 
-/* ==================== ACTUALIZAR RECETA COMPLETA (reemplaza ingredientes) ==================== */
 export const updateReceta = async (req, res) => {
     const pool = await connect();
     const connection = await pool.getConnection();
@@ -259,7 +255,6 @@ export const updateReceta = async (req, res) => {
     }
 };
 
-/* ==================== ELIMINAR RECETA ==================== */
 export const deleteReceta = async (req, res) => {
     const pool = await connect();
     const connection = await pool.getConnection();

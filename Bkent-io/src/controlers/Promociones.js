@@ -1,7 +1,5 @@
-// src/controlers/Promociones.js
 import { connect } from '../database';
 
-/* ==================== LISTAR PROMOCIONES ==================== */
 export const getPromociones = async (req, res) => {
     const pool = await connect();
     const { activo = 1 } = req.query;
@@ -38,7 +36,6 @@ export const getPromociones = async (req, res) => {
     }
 };
 
-/* ==================== OBTENER UNA PROMOCIÓN POR ID ==================== */
 export const getPromocion = async (req, res) => {
     const pool = await connect();
     const id = parseInt(req.params.id);
@@ -77,7 +74,6 @@ export const getPromocion = async (req, res) => {
     }
 };
 
-/* ==================== CREAR NUEVA PROMOCIÓN ==================== */
 export const createPromocion = async (req, res) => {
     const pool = await connect();
     const {
@@ -147,7 +143,6 @@ export const createPromocion = async (req, res) => {
     }
 };
 
-/* ==================== ACTUALIZAR PROMOCIÓN ==================== */
 export const updatePromocion = async (req, res) => {
     const pool = await connect();
     const id = parseInt(req.params.id);
@@ -190,7 +185,6 @@ export const updatePromocion = async (req, res) => {
     }
 };
 
-/* ==================== DESACTIVAR PROMOCIÓN ==================== */
 export const deletePromocion = async (req, res) => {
     const pool = await connect();
     const id = parseInt(req.params.id);

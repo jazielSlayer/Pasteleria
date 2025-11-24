@@ -1,6 +1,5 @@
 import { connect } from '../database';
 
-/* ==================== LISTAR MOVIMIENTOS DE INVENTARIO ==================== */
 export const getMovimientos = async (req, res) => {
     const pool = await connect();
     const { 
@@ -66,7 +65,6 @@ export const getMovimientos = async (req, res) => {
     }
 };
 
-/* ==================== OBTENER UN MOVIMIENTO POR ID ==================== */
 export const getMovimiento = async (req, res) => {
     const pool = await connect();
     const id = parseInt(req.params.id);
@@ -99,7 +97,6 @@ export const getMovimiento = async (req, res) => {
     }
 };
 
-/* ==================== REGISTRAR MERMA O AJUSTE MANUAL (únicos permitidos manualmente) ==================== */
 export const createMovimientoManual = async (req, res) => {
     const pool = await connect();
     const connection = await pool.getConnection();
@@ -189,14 +186,12 @@ export const createMovimientoManual = async (req, res) => {
     }
 };
 
-/* ==================== NO PERMITIR CREAR MANUALMENTE COMPRA/PRODUCCION (se hace desde sus módulos) ==================== */
 export const createMovimiento = async (req, res) => {
     res.status(403).json({ 
         message: 'No permitido: Los movimientos de COMPRA, PRODUCCION y DEVOLUCION se registran automáticamente desde sus módulos respectivos. Usa /movimientos/manual para mermas o ajustes.' 
     });
 };
 
-/* ==================== ELIMINAR MOVIMIENTO (solo AJUSTE o MERMA recientes, con revertir stock) ==================== */
 export const deleteMovimiento = async (req, res) => {
     const pool = await connect();
     const connection = await pool.getConnection();

@@ -1,6 +1,5 @@
 import { connect } from '../database';
 
-/* ==================== DASHBOARD PRINCIPAL - RESUMEN DIARIO ==================== */
 export const getDashboardDiario = async (req, res) => {
     const pool = await connect();
     const { fecha = new Date().toISOString().split('T')[0] } = req.query;
@@ -60,7 +59,6 @@ export const getDashboardDiario = async (req, res) => {
     }
 };
 
-/* ==================== STOCK ACTUAL CON ALERTAS (CORREGIDO PARA TU BD) ==================== */
 export const getStockActual = async (req, res) => {
     const pool = await connect();
     try {
@@ -105,7 +103,6 @@ export const getStockActual = async (req, res) => {
     }
 };
 
-/* ==================== PRODUCTOS MÁS RENTABLES ==================== */
 export const getProductosRentables = async (req, res) => {
     const pool = await connect();
     const { dias = 30 } = req.query;
@@ -141,7 +138,6 @@ export const getProductosRentables = async (req, res) => {
     }
 };
 
-/* ==================== MOVIMIENTOS RECIENTES ==================== */
 export const getMovimientosRecientes = async (req, res) => {
     const pool = await connect();
     try {
@@ -166,7 +162,6 @@ export const getMovimientosRecientes = async (req, res) => {
     }
 };
 
-/* ==================== CLIENTES FRECUENTES ==================== */
 export const getClientesFrecuentes = async (req, res) => {
     const pool = await connect();
     const { limite = 15 } = req.query;
@@ -197,7 +192,6 @@ export const getClientesFrecuentes = async (req, res) => {
     }
 };
 
-/* ==================== PROMOCIONES ACTIVAS (CORREGIDA 100%) ==================== */
 export const getPromocionesActivas = async (req, res) => {
     const pool = await connect();
     try {
@@ -228,7 +222,6 @@ export const getPromocionesActivas = async (req, res) => {
     }
 };
 
-/* ==================== VENTAS POR CATEGORÍA ==================== */
 export const getVentasPorCategoria = async (req, res) => {
     const pool = await connect();
     try {

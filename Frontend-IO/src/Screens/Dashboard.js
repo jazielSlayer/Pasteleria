@@ -163,7 +163,7 @@ function Dashboard() {
   return (
     <div className="proyectos-container">
       <header className="proyectos-header">
-        <h1 style={{ padding: 15, color: "#fff" }}>Dashboard – Pastelería Michellin</h1>
+        <h1 style={{ padding: 15, color: "#fff" }}> Pastelería </h1>
       </header>
 
       {/* ESTADÍSTICAS RÁPIDAS */}

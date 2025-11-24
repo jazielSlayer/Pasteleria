@@ -1,6 +1,6 @@
 import { connect } from '../database';
 
-// ======================== LISTAR TODAS LAS COMPRAS ========================
+
 export const getCompras = async (req, res) => {
     const pool = await connect();
     try {
@@ -25,7 +25,7 @@ export const getCompras = async (req, res) => {
     }
 };
 
-// ======================== OBTENER UNA COMPRA + DETALLE ========================
+
 export const getCompra = async (req, res) => {
     const pool = await connect();
     const id = parseInt(req.params.id);
@@ -79,7 +79,7 @@ export const getCompra = async (req, res) => {
     }
 };
 
-// ======================== CREAR NUEVA COMPRA (con detalle) ========================
+
 export const createCompra = async (req, res) => {
     const pool = await connect();
     const connection = await pool.getConnection();
@@ -171,7 +171,7 @@ export const createCompra = async (req, res) => {
     }
 };
 
-// ======================== RECIBIR COMPRA (actualiza stock y costo promedio) ========================
+
 export const recibirCompra = async (req, res) => {
     const pool = await connect();
     const connection = await pool.getConnection();
@@ -232,7 +232,7 @@ export const recibirCompra = async (req, res) => {
     }
 };
 
-// ======================== CANCELAR COMPRA (solo si está PENDIENTE) ========================
+
 export const cancelarCompra = async (req, res) => {
     const pool = await connect();
     const id = parseInt(req.params.id);

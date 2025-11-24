@@ -75,6 +75,7 @@ export default function OptimizacionPanel() {
     setRestriccionesMax(restriccionesMax.filter((_, i) => i !== index));
   };
 
+  /* ==================== MINIMIZAR COSTOS ==================== */
   const handleMinimizar = async () => {
     setLoading(true);
     setError(null);
