@@ -19,7 +19,7 @@ import ProduccionDiaria from './routes/ProduccionDiaria';
 import Clientes from './routes/Clientes';
 import Promociones from './routes/Promociones';
 import Ventas from './routes/Venta'
-
+import Optimizacion  from './routes/Optimizacion';
 import Vistas from './routes/Vistas';
 
 
@@ -46,6 +46,7 @@ app.use(ProduccionDiaria);
 app.use(Clientes);
 app.use(Promociones);
 app.use(Ventas)
+app.use(Optimizacion);
 
 
 app.use(Vistas);

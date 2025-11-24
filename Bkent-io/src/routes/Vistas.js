@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { getClientesFrecuentes, getDashboardDiario, getMovimientosRecientes, getProductosRentables, getPromocionesActivas, getStockActual, getVentasPorCategoria } from "../controlers/Vistas";
+import { optimizarProduccion } from "../controlers/ProduccionOptima.js";
 
 const router = Router();
 /**
@@ -239,5 +240,7 @@ router.get("/clientes/frecuentes", getClientesFrecuentes);
 router.get("/promociones/activas", getPromocionesActivas);
 
 router.get("/ventanas/categoria", getVentasPorCategoria);
+
+
 
 export default router;

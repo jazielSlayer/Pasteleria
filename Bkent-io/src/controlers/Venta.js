@@ -3,7 +3,7 @@ import { connect } from '../database';
 /* ==================== LISTAR VENTAS (con filtros) ==================== */
 export const getVentas = async (req, res) => {
     const pool = await connect();
-    const { fecha, cliente_id, tipo = 'MOSTRADOR' } = req.query;
+    const { fecha, cliente_id } = req.query;
 
     try {
         let query = `
@@ -11,19 +11,19 @@ export const getVentas = async (req, res) => {
                 v.venta_id,
                 v.fecha,
                 v.cliente_id,
-                c.nombres + ' ' + c.apellidos AS cliente_nombre,
-                c.ci AS cliente_ci,
-                v.total_bs,
-                v.descuento_bs,
-                v.total_final_bs,
-                v.tipo_venta,
-                v.usuario,
-                v.estado
-            FROM Ventas v
-            LEFT JOIN Clientes c ON v.cliente_id = c.cliente_id
-            WHERE v.tipo_venta = ?
+                c.nombre AS cliente_nombre,
+                c.nit_ci AS cliente_ci,
+                v.subtotal,
+                v.descuento,
+                v.total,
+                v.metodo_pago,
+                v.vendedor,
+                v.numero_factura
+            FROM ventas v
+            LEFT JOIN clientes c ON v.cliente_id = c.cliente_id
+            WHERE 1=1
         `;
-        const values = [tipo];
+        const values = [];
 
         if (fecha) {
             query += ' AND DATE(v.fecha) = ?';
@@ -41,11 +41,11 @@ export const getVentas = async (req, res) => {
 
     } catch (error) {
         console.error('Error fetching ventas:', error);
-        res.status(500).json({ message: 'Error al obtener ventas' });
+        res.status(500).json({ message: 'Error al obtener ventas', error: error.message });
     }
 };
 
-/* ==================== OBTENER VENTA COMPLETA + DETALLE ==================== */
+/* ==================== OBTENER VENTA + DETALLE ==================== */
 export const getVenta = async (req, res) => {
     const pool = await connect();
     const id = parseInt(req.params.id);
@@ -53,15 +53,13 @@ export const getVenta = async (req, res) => {
     if (isNaN(id) || id <= 0) return res.status(400).json({ message: 'ID inválido' });
 
     try {
-        // Cabezera
         const [cabezera] = await pool.query(`
             SELECT 
                 v.*,
-                c.nombres + ' ' + c.apellidos AS cliente_nombre,
-                c.ci AS cliente_ci,
-                c.es_frecuente
-            FROM Ventas v
-            LEFT JOIN Clientes c ON v.cliente_id = c.cliente_id
+                c.nombre AS cliente_nombre,
+                c.nit_ci AS cliente_ci
+            FROM ventas v
+            LEFT JOIN clientes c ON v.cliente_id = c.cliente_id
             WHERE v.venta_id = ?
         `, [id]);
 
@@ -69,40 +67,31 @@ export const getVenta = async (req, res) => {
             return res.status(404).json({ message: 'Venta no encontrada' });
         }
 
-        // Detalle
         const [detalle] = await pool.query(`
             SELECT 
                 vd.*,
                 p.codigo,
                 p.nombre AS producto_nombre,
-                p.precio_venta,
-                COALESCE(costo.costo_unitario, 0) AS costo_unitario,
-                ROUND(vd.cantidad * COALESCE(costo.costo_unitario, 0), 2) AS costo_total
-            FROM VentaDetalle vd
-            JOIN Productos p ON vd.producto_id = p.producto_id
-            LEFT JOIN vw_costo_productos costo ON p.producto_id = costo.producto_id
+                p.precio_venta
+            FROM ventadetalle vd
+            JOIN productos p ON vd.producto_id = p.producto_id
             WHERE vd.venta_id = ?
-            ORDER BY vd.item
+            ORDER BY vd.detalle_id
         `, [id]);
-
-        const ganancia = detalle.reduce((sum, item) => {
-            return sum + (item.precio_unitario * item.cantidad) - item.costo_total;
-        }, 0);
 
         res.json({
             ...cabezera[0],
             items: detalle,
-            ganancia_bruta: parseFloat(ganancia.toFixed(2)),
             items_count: detalle.length
         });
 
     } catch (error) {
         console.error('Error fetching venta:', error);
-        res.status(500).json({ message: 'Error al obtener venta' });
+        res.status(500).json({ message: 'Error al obtener venta', error: error.message });
     }
 };
 
-/* ==================== REGISTRAR VENTA COMPLETA (con promociones y descuento de stock) ==================== */
+/* ==================== CREAR VENTA (CORREGIDO PARA TU SISTEMA REAL) ==================== */
 export const createVenta = async (req, res) => {
     const pool = await connect();
     const connection = await pool.getConnection();
@@ -112,134 +101,77 @@ export const createVenta = async (req, res) => {
 
         const {
             cliente_id = null,
-            items,                    // [{ producto_id, cantidad }]
-            tipo_venta = 'MOSTRADOR', // MOSTRADOR, PEDIDO, DELIVERY
-            usuario = 'Caja',
-            aplicar_promociones = true
+            items = [],
+            metodo_pago = 'EFECTIVO',
+            vendedor = 'Caja',
+            tipo_comprobante = 'FACTURA',        // ← NUEVO
+            numero_factura = null                // ← NUEVO
         } = req.body;
 
-        if (!items || !Array.isArray(items) || items.length === 0) {
-            return res.status(400).json({ message: 'Items son obligatorios' });
+        if (!Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ message: 'Debe agregar al menos un producto' });
         }
 
-        // Validar productos y calcular total + promociones
         let subtotal = 0;
-        let descuento_total = 0;
-        const detalleValidado = [];
+        let descuento_cliente = 0;
+        const detalleFinal = [];
 
         for (const item of items) {
             const { producto_id, cantidad } = item;
             if (!producto_id || !cantidad || cantidad <= 0) {
-                throw new Error('Cada item debe tener producto_id y cantidad > 0');
+                throw new Error('Producto y cantidad son obligatorios');
             }
 
-            const [prod] = await connection.query(`
-                SELECT p.*, COALESCE(v.costo_unitario, 0) AS costo_unitario
-                FROM Productos p
-                LEFT JOIN vw_costo_productos v ON p.producto_id = v.producto_id
-                WHERE p.producto_id = ? AND p.activo = 1
-            `, [producto_id]);
+            const [prod] = await connection.query(
+                'SELECT producto_id, nombre, precio_venta FROM productos WHERE producto_id = ? AND activo = 1',
+                [producto_id]
+            );
 
             if (prod.length === 0) {
-                throw new Error(`Producto ${producto_id} no encontrado o inactivo`);
+                throw new Error(`Producto ID ${producto_id} no encontrado o inactivo`);
             }
 
             const producto = prod[0];
-            let precio_final = producto.precio_venta;
-            let descuento_item = 0;
-            let promo_aplicada = null;
+            const precio = parseFloat(producto.precio_venta);
+            const subtotalItem = precio * parseFloat(cantidad);
+            subtotal += subtotalItem;
 
-            // Aplicar promociones activas
-            if (aplicar_promociones) {
-                const hoy = new Date().toISOString().split('T')[0];
-                const [promo] = await connection.query(`
-                    SELECT * FROM Promociones
-                    WHERE producto_id = ? AND activa = 1
-                      AND ? BETWEEN fecha_inicio AND fecha_fin
-                    ORDER BY descuento_porcentaje DESC, descuento_fijo_bs DESC
-                    LIMIT 1
-                `, [producto_id, hoy]);
-
-                if (promo.length > 0) {
-                    const p = promo[0];
-                    if (p.tipo_promocion === 'PORCENTAJE') {
-                        descuento_item = precio_final * (p.descuento_porcentaje / 100);
-                        precio_final -= descuento_item;
-                        promo_aplicada = `${p.descuento_porcentaje}% OFF`;
-                    } else if (p.tipo_promocion === 'FIJO') {
-                        descuento_item = p.descuento_fijo_bs;
-                        precio_final = Math.max(0, precio_final - descuento_item);
-                        promo_aplicada = `${p.descuento_fijo_bs} Bs OFF`;
-                    } else if (p.tipo_promocion === '2X1' && cantidad >= 2) {
-                        const pagados = Math.floor(cantidad / 2);
-                        descuento_item = precio_final * (cantidad - pagados);
-                        precio_final = precio_final * pagados / cantidad;
-                        promo_aplicada = '2x1';
-                    }
-                }
-            }
-
-            const subtotal_item = precio_final * cantidad;
-            subtotal += producto.precio_venta * cantidad;
-            descuento_total += descuento_item * cantidad;
-
-            detalleValidado.push({
+            detalleFinal.push({
                 producto_id,
                 cantidad: parseFloat(cantidad),
-                precio_unitario: parseFloat(producto.precio_venta.toFixed(2)),
-                precio_final: parseFloat(precio_final.toFixed(2)),
-                descuento_unitario: parseFloat(descuento_item.toFixed(2)),
-                subtotal: parseFloat(subtotal_item.toFixed(2)),
-                promo_aplicada
+                precio_unitario: precio,
+                subtotal: subtotalItem
             });
         }
 
-        const total_final = detalleValidado.reduce((sum, i) => sum + i.subtotal, 0);
-
-        // Registrar cabezera
-        const [ventaResult] = await connection.query(`
-            INSERT INTO Ventas 
-                (cliente_id, subtotal_bs, descuento_bs, total_final_bs, tipo_venta, usuario)
-            VALUES (?, ?, ?, ?, ?, ?)
-        `, [
-            cliente_id || null,
-            parseFloat(subtotal.toFixed(2)),
-            parseFloat(descuento_total.toFixed(2)),
-            parseFloat(total_final.toFixed(2)),
-            tipo_venta,
-            usuario
-        ]);
-
-        const venta_id = ventaResult.insertId;
-
-        // Registrar detalle
-        for (let i = 0; i < detalleValidado.length; i++) {
-            const item = detalleValidado[i];
-            await connection.query(`
-                INSERT INTO VentaDetalle 
-                    (venta_id, item, producto_id, cantidad, precio_unitario, precio_final, descuento_unitario, subtotal)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            `, [
-                venta_id, i + 1, item.producto_id, item.cantidad,
-                item.precio_unitario, item.precio_final, item.descuento_unitario, item.subtotal
-            ]);
-
-            // Descontar del inventario (solo MOSTRADOR)
-            if (tipo_venta === 'MOSTRADOR') {
-                await connection.query(`
-                    UPDATE Productos SET stock_actual = stock_actual - ? WHERE producto_id = ?
-                `, [item.cantidad, item.producto_id]);
+        // Aplicar descuento por cliente (si tiene porcentaje)
+        if (cliente_id) {
+            const [cli] = await connection.query(
+                'SELECT descuento_porcentaje FROM clientes WHERE cliente_id = ?',
+                [cliente_id]
+            );
+            if (cli.length > 0 && cli[0].descuento_porcentaje > 0) {
+                descuento_cliente = subtotal * (cli[0].descuento_porcentaje / 100);
             }
         }
 
-        // Acumular puntos si es cliente frecuente
-        if (cliente_id) {
-            const puntos = Math.floor(total_final / 10); // 1 punto por cada 10 Bs
-            if (puntos > 0) {
-                await connection.query(`
-                    UPDATE Clientes SET puntos_acumulados = puntos_acumulados + ? WHERE cliente_id = ?
-                `, [puntos, cliente_id]);
-            }
+        const total = subtotal - descuento_cliente;
+
+        const [result] = await connection.query(`
+            INSERT INTO ventas 
+                (cliente_id, subtotal, descuento, total, metodo_pago, vendedor, tipo_comprobante, numero_factura)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, [cliente_id, subtotal, descuento_cliente, total, metodo_pago, vendedor, tipo_comprobante, numero_factura]);
+
+        const venta_id = result.insertId;
+
+        // Insertar detalle (sin tocar stock)
+        for (const item of detalleFinal) {
+            await connection.query(`
+                INSERT INTO ventadetalle 
+                    (venta_id, producto_id, cantidad, precio_unitario, subtotal)
+                VALUES (?, ?, ?, ?, ?)
+            `, [venta_id, item.producto_id, item.cantidad, item.precio_unitario, item.subtotal]);
         }
 
         await connection.commit();
@@ -247,25 +179,25 @@ export const createVenta = async (req, res) => {
         res.status(201).json({
             message: 'Venta registrada exitosamente',
             venta_id,
-            total_final_bs: parseFloat(total_final.toFixed(2)),
-            descuento_aplicado: parseFloat(descuento_total.toFixed(2)),
-            items: detalleValidado.length,
-            puntos_ganados: cliente_id ? Math.floor(total_final / 10) : 0
+            subtotal: parseFloat(subtotal.toFixed(2)),
+            descuento: parseFloat(descuento_cliente.toFixed(2)),
+            total: parseFloat(total.toFixed(2)),
+            items_count: items.length
         });
 
     } catch (error) {
         await connection.rollback();
         console.error('Error creando venta:', error);
         res.status(500).json({ 
-            message: 'Error al registrar venta',
-            error: error.message || 'Datos inválidos'
+            message: 'Error al crear venta', 
+            error: error.message 
         });
     } finally {
         connection.release();
     }
 };
 
-/* ==================== ANULAR VENTA (solo del día actual - revierte stock) ==================== */
+/* ==================== ANULAR VENTA (solo del día actual) ==================== */
 export const anularVenta = async (req, res) => {
     const pool = await connect();
     const connection = await pool.getConnection();
@@ -274,28 +206,33 @@ export const anularVenta = async (req, res) => {
     try {
         await connection.beginTransaction();
 
-        const [venta] = await connection.query('SELECT * FROM Ventas WHERE venta_id = ? AND DATE(fecha) = CURDATE()', [id]);
+        const [venta] = await connection.query(
+            'SELECT * FROM ventas WHERE venta_id = ? AND DATE(fecha) = CURDATE()',
+            [id]
+        );
+
         if (venta.length === 0) {
             return res.status(400).json({ message: 'Venta no encontrada o no es del día actual' });
         }
 
-        const v = venta[0];
-
         // Revertir stock
-        if (v.tipo_venta === 'MOSTRADOR') {
-            await connection.query(`
-                UPDATE Productos p
-                JOIN VentaDetalle vd ON p.producto_id = vd.producto_id
-                SET p.stock_actual = p.stock_actual + vd.cantidad
-                WHERE vd.venta_id = ?
-            `, [id]);
-        }
+        await connection.query(`
+            UPDATE productos p
+            JOIN ventadetalle vd ON p.producto_id = vd.producto_id
+            SET p.stock_actual = p.stock_actual + vd.cantidad
+            WHERE vd.venta_id = ?
+        `, [id]);
 
-        // Marcar como anulada
-        await connection.query('UPDATE Ventas SET estado = "ANULADA", total_final_bs = 0 WHERE venta_id = ?', [id]);
+        // Anular venta
+        await connection.query(`
+            UPDATE ventas 
+            SET total = 0, descuento = subtotal, metodo_pago = 'ANULADA'
+            WHERE venta_id = ?
+        `, [id]);
 
-        await connection.commit();
-        res.json({ message: 'Venta anulada y stock revertido correctamente' });
+        await connection.commit(); // ¡AHORA SÍ ES COMMIT, NO MYTHOLOGY!
+
+        res.json({ message: 'Venta anulada y stock restaurado correctamente' });
 
     } catch (error) {
         await connection.rollback();
