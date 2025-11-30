@@ -9,9 +9,6 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _database = require("../database");
-// src/controlers/Provedor.js
-
-/* ==================== OBTENER TODOS LOS PROVEEDORES ==================== */
 var getProveedores = exports.getProveedores = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
     var pool, _yield$pool$query, _yield$pool$query2, rows;
@@ -52,8 +49,6 @@ var getProveedores = exports.getProveedores = /*#__PURE__*/function () {
     return _ref.apply(this, arguments);
   };
 }();
-
-/* ==================== OBTENER UN PROVEEDOR POR ID ==================== */
 var getProveedor = exports.getProveedor = /*#__PURE__*/function () {
   var _ref2 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee2(req, res) {
     var pool, _yield$pool$query3, _yield$pool$query4, rows;
@@ -99,8 +94,6 @@ var getProveedor = exports.getProveedor = /*#__PURE__*/function () {
     return _ref2.apply(this, arguments);
   };
 }();
-
-/* ==================== CREAR NUEVO PROVEEDOR ==================== */
 var createProveedor = exports.createProveedor = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
     var pool, _req$body, nombre, _req$body$nit, nit, _req$body$telefono, telefono, _req$body$direccion, direccion, _req$body$contacto, contacto, _req$body$plazo_pago_, plazo_pago_dias, _yield$pool$query5, _yield$pool$query6, result;
@@ -158,8 +151,6 @@ var createProveedor = exports.createProveedor = /*#__PURE__*/function () {
     return _ref3.apply(this, arguments);
   };
 }();
-
-/* ==================== ACTUALIZAR PROVEEDOR ==================== */
 var updateProveedor = exports.updateProveedor = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res) {
     var pool, id, updates, fields, values, _updates$nit, _updates$telefono, _updates$direccion, _updates$contacto;
@@ -241,8 +232,6 @@ var updateProveedor = exports.updateProveedor = /*#__PURE__*/function () {
     return _ref4.apply(this, arguments);
   };
 }();
-
-/* ==================== DESACTIVAR PROVEEDOR ==================== */
 var deleteProveedor = exports.deleteProveedor = /*#__PURE__*/function () {
   var _ref5 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee5(req, res) {
     var pool, id, _yield$pool$query7, _yield$pool$query8, result;

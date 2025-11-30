@@ -9,7 +9,6 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _database = require("../database");
-/* ==================== LISTAR MOVIMIENTOS DE INVENTARIO ==================== */
 var getMovimientos = exports.getMovimientos = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
     var pool, _req$query, tipo, materia_id, fecha_desde, fecha_hasta, _req$query$limit, limit, query, conditions, values, _yield$pool$query, _yield$pool$query2, rows;
@@ -73,8 +72,6 @@ var getMovimientos = exports.getMovimientos = /*#__PURE__*/function () {
     return _ref.apply(this, arguments);
   };
 }();
-
-/* ==================== OBTENER UN MOVIMIENTO POR ID ==================== */
 var getMovimiento = exports.getMovimiento = /*#__PURE__*/function () {
   var _ref2 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee2(req, res) {
     var pool, id, _yield$pool$query3, _yield$pool$query4, rows;
@@ -129,8 +126,6 @@ var getMovimiento = exports.getMovimiento = /*#__PURE__*/function () {
     return _ref2.apply(this, arguments);
   };
 }();
-
-/* ==================== REGISTRAR MERMA O AJUSTE MANUAL (únicos permitidos manualmente) ==================== */
 var createMovimientoManual = exports.createMovimientoManual = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
     var pool, connection, _req$body, materia_id, tipo, cantidad, usuario, _req$body$observacion, observacion, tipoUpper, _yield$connection$que, _yield$connection$que2, materia, cantidadAbs, esSalida, nuevoStock, _yield$connection$que3, _yield$connection$que4, result;
@@ -249,8 +244,6 @@ var createMovimientoManual = exports.createMovimientoManual = /*#__PURE__*/funct
     return _ref3.apply(this, arguments);
   };
 }();
-
-/* ==================== NO PERMITIR CREAR MANUALMENTE COMPRA/PRODUCCION (se hace desde sus módulos) ==================== */
 var createMovimiento = exports.createMovimiento = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res) {
     return _regenerator["default"].wrap(function _callee4$(_context4) {
@@ -269,8 +262,6 @@ var createMovimiento = exports.createMovimiento = /*#__PURE__*/function () {
     return _ref4.apply(this, arguments);
   };
 }();
-
-/* ==================== ELIMINAR MOVIMIENTO (solo AJUSTE o MERMA recientes, con revertir stock) ==================== */
 var deleteMovimiento = exports.deleteMovimiento = /*#__PURE__*/function () {
   var _ref5 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee5(req, res) {
     var pool, connection, id, _yield$connection$que5, _yield$connection$que6, mov, movimiento, horasTranscurridas, stockRevertido;

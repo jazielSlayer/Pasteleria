@@ -15,7 +15,6 @@ function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) 
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { (0, _defineProperty2["default"])(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-// ======================== LISTAR TODAS LAS COMPRAS ========================
 var getCompras = exports.getCompras = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
     var pool, _yield$pool$query, _yield$pool$query2, rows;
@@ -53,8 +52,6 @@ var getCompras = exports.getCompras = /*#__PURE__*/function () {
     return _ref.apply(this, arguments);
   };
 }();
-
-// ======================== OBTENER UNA COMPRA + DETALLE ========================
 var getCompra = exports.getCompra = /*#__PURE__*/function () {
   var _ref2 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee2(req, res) {
     var pool, id, _yield$pool$query3, _yield$pool$query4, cabezera, _yield$pool$query5, _yield$pool$query6, detalle;
@@ -117,8 +114,6 @@ var getCompra = exports.getCompra = /*#__PURE__*/function () {
     return _ref2.apply(this, arguments);
   };
 }();
-
-// ======================== CREAR NUEVA COMPRA (con detalle) ========================
 var createCompra = exports.createCompra = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
     var pool, connection, _req$body, proveedor_id, numero_factura, items, _yield$connection$que, _yield$connection$que2, prov, total_bs, detalleValidado, _iterator, _step, _item, materia_id, cantidad, precio_unitario, _yield$connection$que5, _yield$connection$que6, materia, subtotal, _yield$connection$que3, _yield$connection$que4, resultCabezera, compra_id, _i, _detalleValidado, item;
@@ -277,8 +272,6 @@ var createCompra = exports.createCompra = /*#__PURE__*/function () {
     return _ref3.apply(this, arguments);
   };
 }();
-
-// ======================== RECIBIR COMPRA (actualiza stock y costo promedio) ========================
 var recibirCompra = exports.recibirCompra = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res) {
     var pool, connection, id, _yield$connection$que7, _yield$connection$que8, compra, _yield$connection$que9, _yield$connection$que10, detalles, _iterator2, _step2, item, materia_id, cantidad, precio_unitario, _yield$connection$que11, _yield$connection$que12, mp, actual, nuevo_stock, costo_nuevo;
@@ -400,8 +393,6 @@ var recibirCompra = exports.recibirCompra = /*#__PURE__*/function () {
     return _ref4.apply(this, arguments);
   };
 }();
-
-// ======================== CANCELAR COMPRA (solo si está PENDIENTE) ========================
 var cancelarCompra = exports.cancelarCompra = /*#__PURE__*/function () {
   var _ref5 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee5(req, res) {
     var pool, id, _yield$pool$query7, _yield$pool$query8, result;

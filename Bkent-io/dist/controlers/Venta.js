@@ -15,7 +15,6 @@ function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) 
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { (0, _defineProperty2["default"])(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-/* ==================== LISTAR VENTAS (con filtros) ==================== */
 var getVentas = exports.getVentas = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
     var pool, _req$query, fecha, cliente_id, query, values, _yield$pool$query, _yield$pool$query2, rows;
@@ -66,8 +65,6 @@ var getVentas = exports.getVentas = /*#__PURE__*/function () {
     return _ref.apply(this, arguments);
   };
 }();
-
-/* ==================== OBTENER VENTA + DETALLE ==================== */
 var getVenta = exports.getVenta = /*#__PURE__*/function () {
   var _ref2 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee2(req, res) {
     var pool, id, _yield$pool$query3, _yield$pool$query4, cabezera, _yield$pool$query5, _yield$pool$query6, detalle;
@@ -132,8 +129,6 @@ var getVenta = exports.getVenta = /*#__PURE__*/function () {
     return _ref2.apply(this, arguments);
   };
 }();
-
-/* ==================== CREAR VENTA (CORREGIDO PARA TU SISTEMA REAL) ==================== */
 var createVenta = exports.createVenta = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
     var pool, connection, _req$body, _req$body$cliente_id, cliente_id, _req$body$items, items, _req$body$metodo_pago, metodo_pago, _req$body$vendedor, vendedor, _req$body$tipo_compro, tipo_comprobante, _req$body$numero_fact, numero_factura, subtotal, descuento_cliente, detalleFinal, _iterator, _step, _item, producto_id, cantidad, _yield$connection$que5, _yield$connection$que6, prod, producto, precio, subtotalItem, _yield$connection$que, _yield$connection$que2, cli, total, _yield$connection$que3, _yield$connection$que4, result, venta_id, _i, _detalleFinal, item;
@@ -291,8 +286,6 @@ var createVenta = exports.createVenta = /*#__PURE__*/function () {
     return _ref3.apply(this, arguments);
   };
 }();
-
-/* ==================== ANULAR VENTA (solo del día actual) ==================== */
 var anularVenta = exports.anularVenta = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res) {
     var pool, connection, id, _yield$connection$que7, _yield$connection$que8, venta;

@@ -9,8 +9,6 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _database = require("../database");
-// src/controlers/Clientes.js  → Versión 100% funcional con tu BD real
-
 var getClientes = exports.getClientes = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
     var pool, _req$query, search, tipo, query, values, term, _yield$pool$query, _yield$pool$query2, rows;

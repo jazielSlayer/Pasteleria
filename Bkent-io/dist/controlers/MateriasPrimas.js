@@ -103,8 +103,6 @@ var getMateriaPrima = exports.getMateriaPrima = /*#__PURE__*/function () {
     return _ref2.apply(this, arguments);
   };
 }();
-
-/* ==================== BUSCAR MATERIA PRIMA POR CÓDIGO (útil en compras) ==================== */
 var getMateriaPrimaByCodigo = exports.getMateriaPrimaByCodigo = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
     var pool, codigo, _yield$pool$query5, _yield$pool$query6, rows;
@@ -159,8 +157,6 @@ var getMateriaPrimaByCodigo = exports.getMateriaPrimaByCodigo = /*#__PURE__*/fun
     return _ref3.apply(this, arguments);
   };
 }();
-
-/* ==================== CREAR NUEVA MATERIA PRIMA ==================== */
 var createMateriaPrima = exports.createMateriaPrima = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res) {
     var pool, _req$body, codigo, nombre, unidad, _req$body$stock_minim, stock_minimo, _req$body$stock_actua, stock_actual, _req$body$costo_prome, costo_promedio, _req$body$proveedor_p, proveedor_preferido_id, unidadesValidas, _yield$pool$query7, _yield$pool$query8, prov, _yield$pool$query9, _yield$pool$query10, result;
@@ -271,8 +267,6 @@ var createMateriaPrima = exports.createMateriaPrima = /*#__PURE__*/function () {
     return _ref4.apply(this, arguments);
   };
 }();
-
-/* ==================== ACTUALIZAR MATERIA PRIMA ==================== */
 var updateMateriaPrima = exports.updateMateriaPrima = /*#__PURE__*/function () {
   var _ref5 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee5(req, res) {
     var pool, id, _req$body2, codigo, nombre, unidad, stock_minimo, stock_actual, costo_promedio, proveedor_preferido_id, _yield$pool$query11, _yield$pool$query12, exists, fields, values, unidadesValidas, _yield$pool$query13, _yield$pool$query14, prov;
@@ -439,8 +433,6 @@ var updateMateriaPrima = exports.updateMateriaPrima = /*#__PURE__*/function () {
     return _ref5.apply(this, arguments);
   };
 }();
-
-/* ==================== ELIMINAR MATERIA PRIMA (solo si no tiene movimientos) ==================== */
 var deleteMateriaPrima = exports.deleteMateriaPrima = /*#__PURE__*/function () {
   var _ref6 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee6(req, res) {
     var pool, id, _yield$pool$query15, _yield$pool$query16, enUso, uso, _yield$pool$query17, _yield$pool$query18, result;

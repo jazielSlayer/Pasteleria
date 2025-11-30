@@ -12,7 +12,6 @@ var _database = require("../database");
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-/* ==================== LISTAR TODAS LAS RECETAS (con producto y costo) ==================== */
 var getRecetas = exports.getRecetas = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
     var pool, _yield$pool$query, _yield$pool$query2, rows;
@@ -50,8 +49,6 @@ var getRecetas = exports.getRecetas = /*#__PURE__*/function () {
     return _ref.apply(this, arguments);
   };
 }();
-
-/* ==================== OBTENER RECETA COMPLETA POR PRODUCTO_ID O RECETA_ID ==================== */
 var getReceta = exports.getReceta = /*#__PURE__*/function () {
   var _ref2 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee2(req, res) {
     var pool, id, _yield$pool$query3, _yield$pool$query4, recetaRows, receta, _yield$pool$query5, _yield$pool$query6, ingredientes, costo_materias, costo_total, costo_por_porcion;
@@ -135,8 +132,6 @@ var getReceta = exports.getReceta = /*#__PURE__*/function () {
     return _ref2.apply(this, arguments);
   };
 }();
-
-/* ==================== CREAR RECETA COMPLETA (cabezera + ingredientes) ==================== */
 var createReceta = exports.createReceta = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
     var pool, connection, _req$body, producto_id, _req$body$porciones_s, porciones_salida, _req$body$costo_mano_, costo_mano_obra, _req$body$costo_energ, costo_energia, ingredientes, _yield$connection$que, _yield$connection$que2, producto, _yield$connection$que3, _yield$connection$que4, existe, _iterator, _step, ing, materia_id, cantidad, _yield$connection$que7, _yield$connection$que8, materia, _yield$connection$que5, _yield$connection$que6, result, receta_id, _iterator2, _step2, _ing;
@@ -313,8 +308,6 @@ var createReceta = exports.createReceta = /*#__PURE__*/function () {
     return _ref3.apply(this, arguments);
   };
 }();
-
-/* ==================== ACTUALIZAR RECETA COMPLETA (reemplaza ingredientes) ==================== */
 var updateReceta = exports.updateReceta = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res) {
     var pool, connection, id, _req$body2, porciones_salida, _req$body2$costo_mano, costo_mano_obra, _req$body2$costo_ener, costo_energia, ingredientes, _yield$connection$que9, _yield$connection$que10, receta, _iterator3, _step3, ing, _yield$connection$que11, _yield$connection$que12, m, _iterator4, _step4, _ing2;
@@ -464,8 +457,6 @@ var updateReceta = exports.updateReceta = /*#__PURE__*/function () {
     return _ref4.apply(this, arguments);
   };
 }();
-
-/* ==================== ELIMINAR RECETA ==================== */
 var deleteReceta = exports.deleteReceta = /*#__PURE__*/function () {
   var _ref5 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee5(req, res) {
     var pool, connection, id, _yield$connection$que13, _yield$connection$que14, usada, _yield$connection$que15, _yield$connection$que16, result;

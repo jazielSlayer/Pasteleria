@@ -9,7 +9,6 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _database = require("../database");
-/* ==================== DASHBOARD PRINCIPAL - RESUMEN DIARIO ==================== */
 var getDashboardDiario = exports.getDashboardDiario = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
     var pool, _req$query$fecha, fecha, _yield$pool$query, _yield$pool$query2, resumen, _yield$pool$query3, _yield$pool$query4, topProductos, data, ventas, descuentos, ganancia;
@@ -69,8 +68,6 @@ var getDashboardDiario = exports.getDashboardDiario = /*#__PURE__*/function () {
     return _ref.apply(this, arguments);
   };
 }();
-
-/* ==================== STOCK ACTUAL CON ALERTAS (CORREGIDO PARA TU BD) ==================== */
 var getStockActual = exports.getStockActual = /*#__PURE__*/function () {
   var _ref2 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee2(req, res) {
     var pool, _yield$pool$query5, _yield$pool$query6, rows, valorTotal, resumen;
@@ -126,8 +123,6 @@ var getStockActual = exports.getStockActual = /*#__PURE__*/function () {
     return _ref2.apply(this, arguments);
   };
 }();
-
-/* ==================== PRODUCTOS MÁS RENTABLES ==================== */
 var getProductosRentables = exports.getProductosRentables = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
     var pool, _req$query$dias, dias, _yield$pool$query7, _yield$pool$query8, rows;
@@ -166,8 +161,6 @@ var getProductosRentables = exports.getProductosRentables = /*#__PURE__*/functio
     return _ref3.apply(this, arguments);
   };
 }();
-
-/* ==================== MOVIMIENTOS RECIENTES ==================== */
 var getMovimientosRecientes = exports.getMovimientosRecientes = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res) {
     var pool, _yield$pool$query9, _yield$pool$query10, rows;
@@ -205,8 +198,6 @@ var getMovimientosRecientes = exports.getMovimientosRecientes = /*#__PURE__*/fun
     return _ref4.apply(this, arguments);
   };
 }();
-
-/* ==================== CLIENTES FRECUENTES ==================== */
 var getClientesFrecuentes = exports.getClientesFrecuentes = /*#__PURE__*/function () {
   var _ref5 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee5(req, res) {
     var pool, _req$query$limite, limite, _yield$pool$query11, _yield$pool$query12, rows;
@@ -245,8 +236,6 @@ var getClientesFrecuentes = exports.getClientesFrecuentes = /*#__PURE__*/functio
     return _ref5.apply(this, arguments);
   };
 }();
-
-/* ==================== PROMOCIONES ACTIVAS (CORREGIDA 100%) ==================== */
 var getPromocionesActivas = exports.getPromocionesActivas = /*#__PURE__*/function () {
   var _ref6 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee6(req, res) {
     var pool, _yield$pool$query13, _yield$pool$query14, rows;
@@ -284,8 +273,6 @@ var getPromocionesActivas = exports.getPromocionesActivas = /*#__PURE__*/functio
     return _ref6.apply(this, arguments);
   };
 }();
-
-/* ==================== VENTAS POR CATEGORÍA ==================== */
 var getVentasPorCategoria = exports.getVentasPorCategoria = /*#__PURE__*/function () {
   var _ref7 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee7(req, res) {
     var pool, _yield$pool$query15, _yield$pool$query16, rows;

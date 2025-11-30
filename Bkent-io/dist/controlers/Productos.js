@@ -9,7 +9,6 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _database = require("../database");
-/* ==================== LISTAR TODOS LOS PRODUCTOS ==================== */
 var getProductos = exports.getProductos = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
     var pool, _yield$pool$query, _yield$pool$query2, rows;
@@ -47,8 +46,6 @@ var getProductos = exports.getProductos = /*#__PURE__*/function () {
     return _ref.apply(this, arguments);
   };
 }();
-
-/* ==================== OBTENER UN PRODUCTO POR ID ==================== */
 var getProducto = exports.getProducto = /*#__PURE__*/function () {
   var _ref2 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee2(req, res) {
     var pool, id, _yield$pool$query3, _yield$pool$query4, rows;
@@ -103,8 +100,6 @@ var getProducto = exports.getProducto = /*#__PURE__*/function () {
     return _ref2.apply(this, arguments);
   };
 }();
-
-/* ==================== BUSCAR PRODUCTO POR CÓDIGO (ideal para punto de venta) ==================== */
 var getProductoByCodigo = exports.getProductoByCodigo = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
     var pool, codigo, _yield$pool$query5, _yield$pool$query6, rows;
@@ -159,8 +154,6 @@ var getProductoByCodigo = exports.getProductoByCodigo = /*#__PURE__*/function ()
     return _ref3.apply(this, arguments);
   };
 }();
-
-/* ==================== CREAR NUEVO PRODUCTO ==================== */
 var createProducto = exports.createProducto = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res) {
     var pool, _req$body, codigo, nombre, _req$body$categoria, categoria, precio_venta, _req$body$es_por_peso, es_por_peso, categoriasValidas, _yield$pool$query7, _yield$pool$query8, result;
@@ -254,8 +247,6 @@ var createProducto = exports.createProducto = /*#__PURE__*/function () {
     return _ref4.apply(this, arguments);
   };
 }();
-
-/* ==================== ACTUALIZAR PRODUCTO ==================== */
 var updateProducto = exports.updateProducto = /*#__PURE__*/function () {
   var _ref5 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee5(req, res) {
     var pool, id, _req$body2, codigo, nombre, categoria, precio_venta, es_por_peso, activo, _yield$pool$query9, _yield$pool$query10, exists, fields, values, categoriasValidas;
@@ -404,8 +395,6 @@ var updateProducto = exports.updateProducto = /*#__PURE__*/function () {
     return _ref5.apply(this, arguments);
   };
 }();
-
-/* ==================== ELIMINAR / DESACTIVAR PRODUCTO ==================== */
 var deleteProducto = exports.deleteProducto = /*#__PURE__*/function () {
   var _ref6 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee6(req, res) {
     var pool, id, _yield$pool$query11, _yield$pool$query12, enUso, uso, _yield$pool$query13, _yield$pool$query14, result;

@@ -11,8 +11,7 @@ var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/sli
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _database = require("../database");
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { (0, _defineProperty2["default"])(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; } // src/controlers/Promociones.js
-/* ==================== LISTAR PROMOCIONES ==================== */
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { (0, _defineProperty2["default"])(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 var getPromociones = exports.getPromociones = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
     var pool, _req$query$activo, activo, hoy, _yield$pool$query, _yield$pool$query2, rows;
@@ -52,8 +51,6 @@ var getPromociones = exports.getPromociones = /*#__PURE__*/function () {
     return _ref.apply(this, arguments);
   };
 }();
-
-/* ==================== OBTENER UNA PROMOCIÓN POR ID ==================== */
 var getPromocion = exports.getPromocion = /*#__PURE__*/function () {
   var _ref2 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee2(req, res) {
     var pool, id, _yield$pool$query3, _yield$pool$query4, rows, promo, hoy, vigente;
@@ -113,8 +110,6 @@ var getPromocion = exports.getPromocion = /*#__PURE__*/function () {
     return _ref2.apply(this, arguments);
   };
 }();
-
-/* ==================== CREAR NUEVA PROMOCIÓN ==================== */
 var createPromocion = exports.createPromocion = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
     var pool, _req$body, nombre, tipo, valor, _req$body$producto_id, producto_id, fecha_inicio, fecha_fin, _req$body$minimo_cant, minimo_cantidad, _req$body$activo, activo, tiposValidos, _yield$pool$query5, _yield$pool$query6, prod, _yield$pool$query7, _yield$pool$query8, result;
@@ -215,8 +210,6 @@ var createPromocion = exports.createPromocion = /*#__PURE__*/function () {
     return _ref3.apply(this, arguments);
   };
 }();
-
-/* ==================== ACTUALIZAR PROMOCIÓN ==================== */
 var updatePromocion = exports.updatePromocion = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res) {
     var pool, id, campos, _yield$pool$query9, _yield$pool$query10, exists, fields, values;
@@ -320,8 +313,6 @@ var updatePromocion = exports.updatePromocion = /*#__PURE__*/function () {
     return _ref4.apply(this, arguments);
   };
 }();
-
-/* ==================== DESACTIVAR PROMOCIÓN ==================== */
 var deletePromocion = exports.deletePromocion = /*#__PURE__*/function () {
   var _ref5 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee5(req, res) {
     var pool, id, _yield$pool$query11, _yield$pool$query12, promo;

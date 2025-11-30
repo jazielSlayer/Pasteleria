@@ -21,6 +21,7 @@ import Promociones from './routes/Promociones';
 import Ventas from './routes/Venta'
 import Optimizacion  from './routes/Optimizacion';
 import Vistas from './routes/Vistas';
+import recursos from './routes/Recursos';
 
 
 
@@ -47,6 +48,7 @@ app.use(Clientes);
 app.use(Promociones);
 app.use(Ventas)
 app.use(Optimizacion);
+app.use(recursos);
 
 
 app.use(Vistas);

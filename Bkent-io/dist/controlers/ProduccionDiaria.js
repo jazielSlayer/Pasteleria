@@ -12,7 +12,6 @@ var _database = require("../database");
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-/* ==================== LISTAR PRODUCCIÓN DIARIA ==================== */
 var getProduccionDiaria = exports.getProduccionDiaria = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
     var pool, _req$query, fecha, producto_id, query, values, _yield$pool$query, _yield$pool$query2, rows;
@@ -62,8 +61,6 @@ var getProduccionDiaria = exports.getProduccionDiaria = /*#__PURE__*/function ()
     return _ref.apply(this, arguments);
   };
 }();
-
-/* ==================== OBTENER UNA PRODUCCIÓN POR ID ==================== */
 var getProduccion = exports.getProduccion = /*#__PURE__*/function () {
   var _ref2 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee2(req, res) {
     var pool, id, _yield$pool$query3, _yield$pool$query4, rows;
@@ -118,8 +115,6 @@ var getProduccion = exports.getProduccion = /*#__PURE__*/function () {
     return _ref2.apply(this, arguments);
   };
 }();
-
-/* ==================== REGISTRAR PRODUCCIÓN DIARIA (con descuento automático de insumos) ==================== */
 var createProduccion = exports.createProduccion = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
     var pool, connection, _req$body, producto_id, cantidad_producida, _req$body$observacion, observacion, _req$body$usuario, usuario, cantProd, _yield$connection$que, _yield$connection$que2, producto, _yield$connection$que3, _yield$connection$que4, receta, factor, faltantes, _iterator, _step, ing, requerido, _iterator2, _step2, _ing, _requerido, _yield$connection$que5, _yield$connection$que6, result;
@@ -293,8 +288,6 @@ var createProduccion = exports.createProduccion = /*#__PURE__*/function () {
     return _ref3.apply(this, arguments);
   };
 }();
-
-/* ==================== ANULAR PRODUCCIÓN (revierte insumos - solo del día actual) ==================== */
 var anularProduccion = exports.anularProduccion = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res) {
     var pool, connection, id, _yield$connection$que7, _yield$connection$que8, prod, produccion, hoy, _yield$connection$que9, _yield$connection$que10, insumos, _iterator3, _step3, ing;
