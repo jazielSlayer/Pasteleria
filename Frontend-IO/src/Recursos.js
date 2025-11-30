@@ -515,12 +515,12 @@ function RecursosProduccion() {
             </div>
 
             <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <table style={{margin: "20px", width: "95%", borderCollapse: "collapse" }}>
                 <thead style={{ background: "#333", position: "sticky", top: 0 }}>
                   <tr>
                     <th style={{ padding: "12px", textAlign: "left", color: "#fff" }}>Recurso</th>
                     <th style={{ padding: "12px", textAlign: "left", color: "#fff" }}>Disponible</th>
-                    <th style={{ padding: "12px", textAlign: "left", color: "#fff" }}>Productos Usando</th>
+                   {/* <th style={{ padding: "12px", textAlign: "left", color: "#fff" }}>Productos Usando</th> */}
                     <th style={{ padding: "12px", textAlign: "left", color: "#fff" }}>Consumo Total</th>
                   </tr>
                 </thead>
@@ -536,7 +536,7 @@ function RecursosProduccion() {
                       <td style={{ padding: "12px", color: "#4CAF50" }}>
                         {parseFloat(stat.cantidad_disponible).toFixed(2)} {stat.unidad}
                       </td>
-                      <td style={{ padding: "12px", color: "#2196F3", textAlign: "center" }}>
+                    {/*  <td style={{ padding: "12px", color: "#ffffffff", textAlign: "center" }}>
                         <span style={{
                           padding: "4px 12px",
                           background: stat.productos_usando > 0 ? "#2196F3" : "#666",
@@ -545,7 +545,7 @@ function RecursosProduccion() {
                         }}>
                           {stat.productos_usando}
                         </span>
-                      </td>
+                      </td> */}
                       <td style={{ padding: "12px", color: "#FFC107" }}>
                         {parseFloat(stat.consumo_total_productos).toFixed(2)} {stat.unidad}
                       </td>

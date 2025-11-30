@@ -1,6 +1,9 @@
 import { Link  } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { FaBars } from "react-icons/fa6";
+import { GrResources, GrOptimize } from "react-icons/gr";
+import { IoBookSharp } from "react-icons/io5";
+
 import { 
   MdHomeFilled, 
   MdShoppingCart, 
@@ -119,7 +122,7 @@ function Navegacion() {
 
         <li>
           <Link className="nav-link" to="/produccion/recetas" onClick={onNavLinkClick}>
-            <GiCakeSlice className="nav-icon" />
+            <IoBookSharp className="nav-icon" />
             <span className="nav-text">Recetas</span>
           </Link>
         </li>
@@ -167,13 +170,13 @@ function Navegacion() {
         </li>
         <li>
           <Link className="nav-link" to="/optimizaciones" onClick={onNavLinkClick}>
-            <FaPercentage className="nav-icon" />
+            <GrOptimize className="nav-icon" />
             <span className="nav-text">Obtimizacion</span>
           </Link>
         </li>
         <li>
           <Link className="nav-link" to="/recursos" onClick={onNavLinkClick}>
-            <FaPercentage className="nav-icon" />
+            <GrResources className="nav-icon" />
             <span className="nav-text">Recursos</span>
           </Link>
         </li>
