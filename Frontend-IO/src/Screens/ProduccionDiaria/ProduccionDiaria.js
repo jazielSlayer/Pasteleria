@@ -262,13 +262,13 @@ function ProduccionDiaria() {
         </table>
       </div>
 
-      {/* MODAL CREAR PRODUCCIÓN */}
+      {/* MODAL CREAR PRODUCCIÓ */}
       {showCreate && (
         <div className="modal-overlay" onClick={() => setShowCreate(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: "600px" }}>
             <h2>Registrar Nueva Producción</h2>
-            
-            {stockError && (
+              <form onSubmit={handleCreate}>
+                {stockError && (
               <div style={{ 
                 background: "rgba(244, 67, 54, 0.2)", 
                 border: "1px solid #F44336", 
@@ -290,9 +290,8 @@ function ProduccionDiaria() {
                 </div>
               </div>
             )}
-
-            <div onSubmit={handleCreate}>
-              <div className="form-row">
+                
+                <div className="form-row">
                 <div style={{ width: "100%" }}>
                   <label>ID Producto: *</label>
                   <input 
@@ -308,75 +307,70 @@ function ProduccionDiaria() {
                     Debe tener receta registrada y stock suficiente
                   </small>
                 </div>
-              </div>
-
-              <div className="form-row">
-                <div>
-                  <label>Cantidad Producida: *</label>
-                  <input 
-                    className="InputProyecto" 
-                    type="number" 
-                    step="0.001"
-                    name="cantidad_producida" 
-                    value={formData.cantidad_producida} 
-                    onChange={handleChange} 
-                    min="0.001"
-                    required 
-                  />
                 </div>
-                <div>
-                  <label>Usuario:</label>
-                  <input 
-                    className="InputProyecto" 
-                    name="usuario" 
-                    value={formData.usuario} 
-                    onChange={handleChange} 
-                  />
-                </div>
-              </div>
 
-              <div className="form-row">
-                <div style={{ width: "100%" }}>
-                  <label>Observación:</label>
-                  <textarea 
-                    className="InputProyecto" 
-                    name="observacion" 
-                    value={formData.observacion} 
-                    onChange={handleChange}
-                    rows="3"
-                    placeholder="Notas adicionales..."
-                    style={{ resize: "vertical" }}
-                  />
+                <div className="form-row">
+                  <div>
+                    <label>Cantidad Producida: *</label>
+                    <input 
+                      className="InputProyecto" 
+                      type="number" 
+                      step="0.001"
+                      name="cantidad_producida" 
+                      value={formData.cantidad_producida} 
+                      onChange={handleChange} 
+                      min="0.001"
+                      required 
+                    />
+                  </div>
+                  
                 </div>
-              </div>
 
-              <div style={{ 
-                background: "rgba(33, 150, 243, 0.1)", 
-                border: "1px solid #2196F3", 
-                borderRadius: "8px", 
-                padding: "12px", 
-                marginTop: "15px" 
-              }}>
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <FaCheckCircle style={{ color: "#2196F3", marginRight: "10px" }} />
-                  <div style={{ color: "#fff", fontSize: "13px" }}>
-                    <strong>Nota:</strong> Al registrar la producción, se descontarán automáticamente 
-                    los insumos de la receta según la cantidad producida.
+                <div className="form-full">
+                  <div style={{ width: "100%" }}>
+                    <label>Observación:</label>
+                    <textarea 
+                      className="InputProyecto" 
+                      name="observacion" 
+                      value={formData.observacion} 
+                      onChange={handleChange}
+                      rows="3"
+                      placeholder="Notas adicionales..."
+                      style={{ resize: "vertical" }}
+                    />
                   </div>
                 </div>
-              </div>
 
-              <div className="modal-actions">
-                <button type="button" onClick={handleCreate} className="btn-create">
-                  Registrar Producción
-                </button>
-                <button type="button" className="btn-close" onClick={() => setShowCreate(false)}>
-                  Cancelar
-                </button>
-              </div>
+                <div style={{ 
+                  background: "rgba(33, 150, 243, 0.1)", 
+                  border: "1px solid #2196F3", 
+                  borderRadius: "8px", 
+                  padding: "12px", 
+                  marginTop: "15px" 
+                }}>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <FaCheckCircle style={{ color: "#2196F3", marginRight: "10px" }} />
+                    <div style={{ color: "#fff", fontSize: "13px" }}>
+                      <strong>Nota:</strong> Al registrar la producción, se descontarán automáticamente 
+                      los insumos de la receta según la cantidad producida.
+                    </div>
+                  </div>
+                </div>
+
+                <div className="modal-actions">
+                  <button type="button" onClick={handleCreate} className="btn-create">
+                    Registrar Producción
+                  </button>
+                  <button type="button" className="btn-close" onClick={() => setShowCreate(false)}>
+                    Cancelar
+                  </button>
+                </div>
+              
+              </form>
+              
             </div>
           </div>
-        </div>
+        
       )}
 
       {/* MODAL DETALLE */}

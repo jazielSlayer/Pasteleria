@@ -2,6 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navegacion from "./Navegacion";
+import Recursos from "./Recursos";
 
 // Importar componentes principales
 import Dashboard from "./Screens/Dashboard";
@@ -45,6 +46,7 @@ createRoot(document.getElementById("root")).render(
         
         {/* Ventas */}
         <Route path="/ventas" element={<Ventas />} />
+        <Route path="/recursos" element={<Recursos />} />
         <Route path="/ventas/nueva" element={<NuevaVenta />} />
         
         {/* Productos */}

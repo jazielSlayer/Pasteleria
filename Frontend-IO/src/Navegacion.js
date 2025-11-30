@@ -171,6 +171,12 @@ function Navegacion() {
             <span className="nav-text">Obtimizacion</span>
           </Link>
         </li>
+        <li>
+          <Link className="nav-link" to="/recursos" onClick={onNavLinkClick}>
+            <FaPercentage className="nav-icon" />
+            <span className="nav-text">Recursos</span>
+          </Link>
+        </li>
       </ul>
     </nav>
   );

@@ -1,779 +1,916 @@
-import React, { useState } from 'react';
-import { 
-  maximizarProduccion, 
-  minimizarCostos, 
-  optimizacionPersonalizada,
-  resolverEjemploTortas,
-  validarProblema
-} from '../API/Admin/Optimizacion';
+import React, { useState, useEffect } from "react";
+import {
+  optimizarProduccion,
+  analizarSensibilidad,
+  planificarProduccionPeriodo,
+  getCuellosBotella,
+  getRecursosSubutilizados,
+  getProduccionDiaria,
+  createProduccion,
+  anularProduccion,
+  getRecursosProducto,
+  asignarRecursoAProducto,
+  deleteRecursoProducto,
+} from "../API/Admin/Optimizacion";
 
-export default function OptimizacionPanel() {
-  const [activeTab, setActiveTab] = useState('maximizar');
-  const [resultado, setResultado] = useState(null);
+/**
+ * Pantalla de Optimización de Producción
+ * Usa las mismas className que la vista de Ventas para mantener estilos.
+ */
+export default function Obtimizacion() {
+  const [activeTab, setActiveTab] = useState("optimizar");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [resultado, setResultado] = useState(null);
 
-  // Estado para maximizar
-  const [restriccionesMax, setRestriccionesMax] = useState([
-    { producto_id: '', cantidad_maxima: '' }
-  ]);
+  // Sensibilidad
+  const [recursoSensibilidad, setRecursoSensibilidad] = useState("");
+  const [incrementoSensibilidad, setIncrementoSensibilidad] = useState(0);
 
-  // Estado para minimizar
-  const [demandaMin, setDemandaMin] = useState([
-    { producto_id: '', cantidad_requerida: '' }
-  ]);
+  // Planificación
+  const [diasPeriodo, setDiasPeriodo] = useState(30);
 
-  // Estado para personalizado
-  const [problemaPersonalizado, setProblemaPersonalizado] = useState({
-    tipo: 'maximizar',
-    funcion_objetivo: '',
-    variables: [{ nombre: 'x1', coeficiente: 0, descripcion: '' }],
-    restricciones: [
-      {
-        nombre: '',
-        tipo: '<=',
-        valor: 0,
-        descripcion: '',
-        coeficientes: [{ variable: 'x1', valor: 0 }]
-      }
-    ]
+  // Historial / producciones
+  const [produccionesDiarias, setProduccionesDiarias] = useState([]);
+  const [nuevaProduccion, setNuevaProduccion] = useState({
+    fecha: new Date().toISOString().split("T")[0],
+    producto_id: "",
+    cantidad: "",
   });
 
-  const handleMaximizar = async () => {
+  // Asignaciones producto-recursos
+  const [productoIdSeleccionado, setProductoIdSeleccionado] = useState("");
+  const [productoRecursos, setProductoRecursos] = useState([]);
+  const [nuevaAsignacion, setNuevaAsignacion] = useState({
+    producto_id: "",
+    recurso_nombre: "",
+    cantidad_requerida: "",
+  });
+
+  useEffect(() => {
+    // cargar historial cuando se abra la pestaña historial
+    if (activeTab === "historial") cargarProduccionesDiarias();
+    // cargar recursos producto al cambiar id seleccionado
+    if (activeTab === "asignaciones" && productoIdSeleccionado) {
+      cargarRecursosProducto(productoIdSeleccionado);
+    }
+    // limpiar mensajes al cambiar tab
+    setError(null);
+    setResultado(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, productoIdSeleccionado]);
+
+  async function cargarProduccionesDiarias() {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getProduccionDiaria();
+      setProduccionesDiarias(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err.message || "Error cargando producciones");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleOptimizar() {
     setLoading(true);
     setError(null);
     setResultado(null);
     try {
-      const restriccionesValidas = restriccionesMax.filter(
-        r => r.producto_id && r.cantidad_maxima
+      const res = await optimizarProduccion();
+      setResultado(res);
+    } catch (err) {
+      setError(err.message || "Error al optimizar");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSensibilidad() {
+    if (!recursoSensibilidad.trim()) {
+      setError("Debe indicar el recurso a analizar");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setResultado(null);
+    try {
+      const res = await analizarSensibilidad(
+        recursoSensibilidad,
+        parseFloat(incrementoSensibilidad)
       );
-
-      const data = restriccionesValidas.length > 0 
-        ? { restriccionesDemanda: restriccionesValidas }
-        : {};
-
-      const res = await maximizarProduccion(data);
       setResultado(res);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Error en análisis de sensibilidad");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const agregarRestriccionMax = () => {
-    setRestriccionesMax([...restriccionesMax, { producto_id: '', cantidad_maxima: '' }]);
-  };
-
-  const actualizarRestriccionMax = (index, field, value) => {
-    const nuevas = [...restriccionesMax];
-    nuevas[index][field] = value;
-    setRestriccionesMax(nuevas);
-  };
-
-  const eliminarRestriccionMax = (index) => {
-    setRestriccionesMax(restriccionesMax.filter((_, i) => i !== index));
-  };
-
-  /* ==================== MINIMIZAR COSTOS ==================== */
-  const handleMinimizar = async () => {
+  async function handlePlanificar() {
+    const dias = parseInt(diasPeriodo, 10);
+    if (isNaN(dias) || dias < 1) {
+      setError("Días inválidos");
+      return;
+    }
     setLoading(true);
     setError(null);
     setResultado(null);
     try {
-      const demandasValidas = demandaMin
-        .filter(d => d.producto_id && d.cantidad_requerida)
-        .map(d => ({
-          producto_id: parseInt(d.producto_id),
-          cantidad_requerida: parseFloat(d.cantidad_requerida)
-        }));
+      const res = await planificarProduccionPeriodo(dias);
+      setResultado(res);
+    } catch (err) {
+      setError(err.message || "Error al planificar período");
+    } finally {
+      setLoading(false);
+    }
+  }
 
-      if (demandasValidas.length === 0) {
-        setError('Debe especificar al menos una demanda');
-        setLoading(false);
-        return;
+  async function handleCuellosBotella() {
+    setLoading(true);
+    setError(null);
+    setResultado(null);
+    try {
+      const cuellos = await getCuellosBotella();
+      setResultado({
+        success: true,
+        tipo: "cuellos_botella",
+        cuellos_botella: cuellos,
+      });
+    } catch (err) {
+      setError(err.message || "Error al obtener cuellos de botella");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleRecursosSubutilizados() {
+    setLoading(true);
+    setError(null);
+    setResultado(null);
+    try {
+      const recursos = await getRecursosSubutilizados(50);
+      setResultado({
+        success: true,
+        tipo: "recursos_subutilizados",
+        recursos_subutilizados: recursos,
+      });
+    } catch (err) {
+      setError(err.message || "Error al obtener recursos subutilizados");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleCrearProduccion() {
+    if (!nuevaProduccion.producto_id || !nuevaProduccion.cantidad) {
+      setError("Complete todos los campos de la producción");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      await createProduccion({
+        ...nuevaProduccion,
+        producto_id: parseInt(nuevaProduccion.producto_id, 10),
+        cantidad: parseFloat(nuevaProduccion.cantidad),
+      });
+      setNuevaProduccion({
+        fecha: new Date().toISOString().split("T")[0],
+        producto_id: "",
+        cantidad: "",
+      });
+      await cargarProduccionesDiarias();
+    } catch (err) {
+      setError(err.message || "Error al crear producción");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleAnularProduccion(id) {
+    const confirmado = window.confirm(
+      "¿Está seguro que desea anular esta producción?"
+    );
+    if (!confirmado) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await anularProduccion(id);
+      await cargarProduccionesDiarias();
+    } catch (err) {
+      setError(err.message || "Error al anular producción");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function cargarRecursosProducto(productoId) {
+    if (!productoId) return setProductoRecursos([]);
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getRecursosProducto(parseInt(productoId, 10));
+      setProductoRecursos(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err.message || "Error al cargar recursos del producto");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleAsignarRecurso() {
+    if (
+      !nuevaAsignacion.producto_id ||
+      !nuevaAsignacion.recurso_nombre ||
+      !nuevaAsignacion.cantidad_requerida
+    ) {
+      setError("Complete todos los campos de asignación");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      await asignarRecursoAProducto({
+        producto_id: parseInt(nuevaAsignacion.producto_id, 10),
+        recurso_nombre: nuevaAsignacion.recurso_nombre,
+        cantidad_requerida: parseFloat(nuevaAsignacion.cantidad_requerida),
+      });
+      setNuevaAsignacion({ producto_id: "", recurso_nombre: "", cantidad_requerida: "" });
+      // si la asignación fue para el producto actualmente seleccionado, recargar
+      if (String(productoIdSeleccionado) === String(nuevaAsignacion.producto_id)) {
+        await cargarRecursosProducto(productoIdSeleccionado);
       }
-
-      const res = await minimizarCostos(demandasValidas);
-      setResultado(res);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Error al asignar recurso");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const agregarDemandaMin = () => {
-    setDemandaMin([...demandaMin, { producto_id: '', cantidad_requerida: '' }]);
-  };
-
-  const actualizarDemandaMin = (index, field, value) => {
-    const nuevas = [...demandaMin];
-    nuevas[index][field] = value;
-    setDemandaMin(nuevas);
-  };
-
-  const eliminarDemandaMin = (index) => {
-    setDemandaMin(demandaMin.filter((_, i) => i !== index));
-  };
-
-  const handlePersonalizada = async () => {
+  async function handleEliminarAsignacion(id) {
+    const confirmado = window.confirm("Eliminar asignación?");
+    if (!confirmado) return;
     setLoading(true);
     setError(null);
-    setResultado(null);
     try {
-      const validacion = validarProblema(problemaPersonalizado);
-      if (!validacion.valido) {
-        setError(validacion.errores.join(', '));
-        setLoading(false);
-        return;
-      }
-
-      const res = await optimizacionPersonalizada(problemaPersonalizado);
-      setResultado(res);
+      await deleteRecursoProducto(id);
+      await cargarRecursosProducto(productoIdSeleccionado);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Error al eliminar asignación");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const handleEjemploTortas = async () => {
-    setLoading(true);
-    setError(null);
-    setResultado(null);
-    try {
-      const res = await resolverEjemploTortas();
-      setResultado(res);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* ==================== RENDERIZADO ==================== */
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Optimización de Producción</h1>
+    <div className="proyectos-container">
+      <header className="proyectos-header">
+        <h1 className="admin-title">🎯 Optimización de Producción</h1>
+        <div className="header-actions">
+          <button
+            className="btn-create"
+            onClick={() => {
+              setActiveTab("optimizar");
+              setResultado(null);
+              setError(null);
+            }}
+          >
+            🚀 Ejecutar Optimización
+          </button>
+        </div>
+      </header>
 
-      {/* Tabs */}
-      <div style={styles.tabContainer}>
-        <div style={styles.tabWrapper}>
-          <button 
-            style={{
-              ...styles.tabButton,
-              ...(activeTab === 'maximizar' ? styles.tabButtonActive : styles.tabButtonInactive)
-            }}
-            onClick={() => {
-              setActiveTab('maximizar');
-              setResultado(null);
-              setError(null);
-            }}
-          >
-            Maximizar
-          </button>
-          <button 
-            style={{
-              ...styles.tabButton,
-              ...(activeTab === 'minimizar' ? styles.tabButtonActive : styles.tabButtonInactive)
-            }}
-            onClick={() => {
-              setActiveTab('minimizar');
-              setResultado(null);
-              setError(null);
-            }}
-          >
-            Minimizar 
-          </button>
-          <button 
-            style={{
-              ...styles.tabButton,
-              ...(activeTab === 'personalizada' ? styles.tabButtonActive : styles.tabButtonInactive)
-            }}
-            onClick={() => {
-              setActiveTab('personalizada');
-              setResultado(null);
-              setError(null);
-            }}
-          >
-            Personalizada
-          </button>
+      <div className="tabContainer">
+        <div className="tabWrapper">
+          {["optimizar", "sensibilidad", "planificar", "analisis", "asignaciones", "historial"].map((tab) => (
+            <button
+              key={tab}
+              className={`tabButton ${activeTab === tab ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab(tab);
+                setResultado(null);
+                setError(null);
+              }}
+            >
+              {tab === "optimizar" && "🎯 Optimizar"}
+              {tab === "sensibilidad" && "📊 Sensibilidad"}
+              {tab === "planificar" && "📅 Planificar"}
+              {tab === "analisis" && "🔍 Análisis"}
+              {tab === "asignaciones" && "⚙️ Asignaciones"}
+              {tab === "historial" && "📜 Historial"}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Contenido según tab activo */}
-      <div style={styles.tabContent}>
-        {activeTab === 'maximizar' && (
-          <div style={styles.formContainer}>
-            <h2 style={styles.formTitle}>Maximizar Utilidad de Producción</h2>
-            <p style={styles.description}>Calcula la producción óptima para maximizar utilidades según stock disponible</p>
-            
-            <h3 style={styles.sectionTitle}>Restricciones de Demanda (Opcional)</h3>
-            {restriccionesMax.map((rest, index) => (
-              <div key={index} style={styles.inputGroup}>
-                <input
-                  type="number"
-                  placeholder="ID Producto"
-                  value={rest.producto_id}
-                  onChange={(e) => actualizarRestriccionMax(index, 'producto_id', e.target.value)}
-                  style={styles.formInput}
-                />
-                <input
-                  type="number"
-                  placeholder="Cantidad Máxima"
-                  value={rest.cantidad_maxima}
-                  onChange={(e) => actualizarRestriccionMax(index, 'cantidad_maxima', e.target.value)}
-                  style={styles.formInput}
-                />
-                <button 
-                  onClick={() => eliminarRestriccionMax(index)}
-                  style={styles.deleteButton}
-                  disabled={restriccionesMax.length === 1}
-                >
-                  ❌
-                </button>
-              </div>
-            ))}
-            <div style={styles.buttonGroup}>
-              <button onClick={agregarRestriccionMax} style={styles.addButton}>
-                + Agregar Restricción
-              </button>
-              <button 
-                onClick={handleMaximizar} 
-                disabled={loading}
-                style={{
-                  ...styles.submitButton,
-                  ...styles.submitButtonCreate,
-                  opacity: loading ? 0.6 : 1,
-                  cursor: loading ? 'not-allowed' : 'pointer'
-                }}
-              >
-                {loading ? 'Calculando...' : ' Maximizar'}
-              </button>
+      <div className="tabContent">
+        {activeTab === "optimizar" && (
+          <div className="formContainer">
+            <h2 className="formTitle">Optimizar Producción</h2>
+            <p className="description">
+              Calcula el plan óptimo según recursos, costos y márgenes.
+            </p>
+            <div className="infoBox">
+              <h4 className="infoTitle">ℹ️ ¿Qué hace?</h4>
+              <ul className="infoList">
+                <li>Maximiza utilidad total</li>
+                <li>Identifica recursos críticos</li>
+                <li>Genera recomendaciones</li>
+              </ul>
             </div>
-          </div>
-        )}
-
-        {activeTab === 'minimizar' && (
-          <div style={styles.formContainer}>
-            <h2 style={styles.formTitle}>Minimizar Costos de Producción</h2>
-            <p style={styles.description}>Calcula el plan de producción de menor costo que cumpla con la demanda</p>
-            
-            <h3 style={styles.sectionTitle}>Demanda Requerida</h3>
-            {demandaMin.map((dem, index) => (
-              <div key={index} style={styles.inputGroup}>
-                <input
-                  type="number"
-                  placeholder="ID Producto"
-                  value={dem.producto_id}
-                  onChange={(e) => actualizarDemandaMin(index, 'producto_id', e.target.value)}
-                  style={styles.formInput}
-                />
-                <input
-                  type="number"
-                  placeholder="Cantidad Requerida"
-                  value={dem.cantidad_requerida}
-                  onChange={(e) => actualizarDemandaMin(index, 'cantidad_requerida', e.target.value)}
-                  style={styles.formInput}
-                />
-                <button 
-                  onClick={() => eliminarDemandaMin(index)}
-                  style={styles.deleteButton}
-                  disabled={demandaMin.length === 1}
-                >
-                  ❌
-                </button>
-              </div>
-            ))}
-            <div style={styles.buttonGroup}>
-              <button onClick={agregarDemandaMin} style={styles.addButton}>
-                + Agregar Demanda
-              </button>
-              <button 
-                onClick={handleMinimizar} 
-                disabled={loading}
-                style={{
-                  ...styles.submitButton,
-                  ...styles.submitButtonUpdate,
-                  opacity: loading ? 0.6 : 1,
-                  cursor: loading ? 'not-allowed' : 'pointer'
-                }}
-              >
-                {loading ? 'Calculando...' : 'Minimizar'}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'personalizada' && (
-          <div style={styles.formContainer}>
-            <h2 style={styles.formTitle}>Optimización Personalizada</h2>
-            <p style={styles.description}>Define tu propio problema de programación lineal</p>
-            
-            <button 
-              onClick={handleEjemploTortas} 
+            <button
+              onClick={handleOptimizar}
               disabled={loading}
-              style={{
-                ...styles.exampleButton,
-                opacity: loading ? 0.6 : 1,
-                cursor: loading ? 'not-allowed' : 'pointer'
-              }}
+              className="submitButton submitButtonCreate btn-create"
             >
-              Cargar Ejemplo: Tortas, Cupcakes y Galletas
-            </button>
-            
-            <div style={styles.formGrid}>
-              <div>
-                <label style={styles.formLabel}>Tipo:</label>
-                <select 
-                  value={problemaPersonalizado.tipo}
-                  onChange={(e) => setProblemaPersonalizado({
-                    ...problemaPersonalizado, 
-                    tipo: e.target.value
-                  })}
-                  style={styles.formInput}
-                >
-                  <option value="maximizar">Maximizar</option>
-                  <option value="minimizar">Minimizar</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={styles.formLabel}>Función Objetivo:</label>
-                <input
-                  type="text"
-                  placeholder="Ej: Maximizar utilidad total"
-                  value={problemaPersonalizado.funcion_objetivo}
-                  onChange={(e) => setProblemaPersonalizado({
-                    ...problemaPersonalizado,
-                    funcion_objetivo: e.target.value
-                  })}
-                  style={styles.formInput}
-                />
-              </div>
-            </div>
-
-            <button 
-              onClick={handlePersonalizada} 
-              disabled={loading}
-              style={{
-                ...styles.submitButton,
-                ...styles.submitButtonCreate,
-                opacity: loading ? 0.6 : 1,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                marginTop: '20px'
-              }}
-            >
-              {loading ? '⏳ Calculando...' : 'Resolver'}
+              {loading ? "⏳ Optimizando..." : "🚀 Optimizar Ahora"}
             </button>
           </div>
         )}
-      </div>
 
-      {/* Mensajes de Error */}
-      {error && (
-        <div style={styles.errorMessage}>
-          ❌ Error: {error}
-        </div>
-      )}
+        {activeTab === "sensibilidad" && (
+          <div className="formContainer">
+            <h2 className="formTitle">📊 Análisis de Sensibilidad</h2>
+            <div className="formGrid">
+              <div>
+                <label className="formLabel">Recurso</label>
+                <input
+                  className="InputProyecto formInput"
+                  value={recursoSensibilidad}
+                  onChange={(e) => setRecursoSensibilidad(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="formLabel">Incremento (+/-)</label>
+                <input
+                  className="InputProyecto formInput"
+                  type="number"
+                  value={incrementoSensibilidad}
+                  onChange={(e) => setIncrementoSensibilidad(e.target.value)}
+                />
+              </div>
+            </div>
+            <button
+              onClick={handleSensibilidad}
+              disabled={loading}
+              className="submitButton submitButtonUpdate btn-create"
+            >
+              {loading ? "⏳ Analizando..." : "📊 Analizar Sensibilidad"}
+            </button>
+          </div>
+        )}
 
-      {/* Loading */}
-      {loading && (
-        <div style={styles.loadingText}>
-          ⏳ Procesando optimización...
-        </div>
-      )}
+        {activeTab === "planificar" && (
+          <div className="formContainer">
+            <h2 className="formTitle">📅 Planificar Período</h2>
+            <div className="formGrid">
+              <div>
+                <label className="formLabel">Días</label>
+                <input
+                  className="InputProyecto formInput"
+                  type="number"
+                  min="1"
+                  value={diasPeriodo}
+                  onChange={(e) => setDiasPeriodo(e.target.value)}
+                />
+              </div>
+            </div>
+            <button
+              onClick={handlePlanificar}
+              disabled={loading}
+              className="submitButton btn-create"
+            >
+              {loading ? "⏳ Planificando..." : "📅 Planificar Período"}
+            </button>
+          </div>
+        )}
 
-            {/* Resultados */}
-      {resultado && !loading && (
-        <div style={styles.resultadoContainer}>
-          <h2 style={styles.resultadoTitle}>Resultado de Optimización</h2>
-          <div style={styles.resultadoCard}>
-            <div style={styles.statsContainer}>
-              <div style={{...styles.statCard, ...styles.statCardTotal}}>
-                <h3 style={{...styles.statTitle, ...styles.statTitleTotal}}>Estado</h3>
-                <p style={styles.statValue}>
-                  {resultado.estado || 'Desconocido'}
+        {activeTab === "analisis" && (
+          <div className="formContainer">
+            <h2 className="formTitle">🔍 Análisis Avanzado</h2>
+            <div className="analysisGrid">
+              <div className="analysisCard">
+                <h3 className="analysisCardTitle">🚨 Cuellos de Botella</h3>
+                <p className="analysisCardDesc">
+                  Identifica recursos saturados que limitan la producción.
                 </p>
+                <button
+                  onClick={handleCuellosBotella}
+                  className="analysisButton btn-create"
+                >
+                  🔍 Analizar
+                </button>
               </div>
+              <div className="analysisCard">
+                <h3 className="analysisCardTitle">💤 Recursos Subutilizados</h3>
+                <p className="analysisCardDesc">
+                  Encuentra recursos con baja utilización.
+                </p>
+                <button
+                  onClick={handleRecursosSubutilizados}
+                  className="analysisButton btn-create"
+                >
+                  🔍 Analizar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
-              {/* Utilidad Máxima - para maximizar */}
-              {(resultado.utilidad_maxima !== undefined && resultado.utilidad_maxima !== null) && (
-                <div style={{...styles.statCard, backgroundColor: 'rgba(76, 175, 80, 0.2)'}}>
-                  <h3 style={{...styles.statTitle, color: '#4CAF50'}}>Utilidad Máxima</h3>
-                  <p style={styles.statValue}>
-                    {typeof resultado.utilidad_maxima === 'number' 
-                      ? resultado.utilidad_maxima.toFixed(2) 
-                      : resultado.utilidad_maxima} BOB
-                  </p>
-                </div>
-              )}
-
-              {/* Costo Mínimo - para minimizar */}
-              {(resultado.costo_minimo !== undefined && resultado.costo_minimo !== null) && (
-                <div style={{...styles.statCard, backgroundColor: 'rgba(255, 152, 0, 0.2)'}}>
-                  <h3 style={{...styles.statTitle, color: '#FF9800'}}>Costo Mínimo</h3>
-                  <p style={styles.statValue}>
-                    {typeof resultado.costo_minimo === 'number' 
-                      ? resultado.costo_minimo.toFixed(2) 
-                      : resultado.costo_minimo} BOB
-                  </p>
-                </div>
-              )}
-
-              {/* Valor Óptimo Genérico (personalizada) */}
-              {(resultado.valor_optimo !== undefined && resultado.valor_optimo !== null) && (
-                <div style={{...styles.statCard, backgroundColor: 'rgba(33, 150, 243, 0.2)'}}>
-                  <h3 style={{...styles.statTitle, color: '#2196F3'}}>Valor Óptimo (Z*)</h3>
-                  <p style={styles.statValue}>
-                    {typeof resultado.valor_optimo === 'number' 
-                      ? Number(resultado.valor_optimo).toFixed(2)
-                      : resultado.valor_optimo}
-                  </p>
-                </div>
-              )}
+        {activeTab === "asignaciones" && (
+          <div className="formContainer">
+            <h2 className="formTitle">⚙️ Asignaciones Producto - Recursos</h2>
+            <div className="formGrid">
+              <div>
+                <label className="formLabel">ID Producto (ver asignaciones):</label>
+                <input
+                  className="InputProyecto formInput"
+                  type="number"
+                  value={productoIdSeleccionado}
+                  onChange={(e) => setProductoIdSeleccionado(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="formLabel">Recurso (nombre):</label>
+                <input
+                  className="InputProyecto formInput"
+                  value={nuevaAsignacion.recurso_nombre}
+                  onChange={(e) =>
+                    setNuevaAsignacion({
+                      ...nuevaAsignacion,
+                      recurso_nombre: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <label className="formLabel">Cantidad por unidad:</label>
+                <input
+                  className="InputProyecto formInput"
+                  type="number"
+                  value={nuevaAsignacion.cantidad_requerida}
+                  onChange={(e) =>
+                    setNuevaAsignacion({
+                      ...nuevaAsignacion,
+                      cantidad_requerida: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <label className="formLabel">Producto ID para asignar:</label>
+                <input
+                  className="InputProyecto formInput"
+                  type="number"
+                  value={nuevaAsignacion.producto_id}
+                  onChange={(e) =>
+                    setNuevaAsignacion({
+                      ...nuevaAsignacion,
+                      producto_id: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <div style={{ marginTop: 12 }}>
+              <button
+                onClick={handleAsignarRecurso}
+                className="submitButton submitButtonCreate btn-create"
+              >
+                ➕ Asignar Recurso
+              </button>
             </div>
 
-            {/* TABLA UNIFICADA: funciona para maximizar y minimizar */}
-            {(resultado.produccion || resultado.plan_produccion) && (
-              <div style={styles.tableSection}>
-                <h3 style={styles.sectionTitle}>Plan de Producción Óptima</h3>
-                <div style={styles.tableContainer}>
-                  <table style={styles.table}>
-                    <thead style={styles.tableHead}>
+            <div className="historialList" style={{ marginTop: 24 }}>
+              <h3 className="sectionTitle">🔎 Recursos asignados</h3>
+              {productoRecursos.length === 0 ? (
+                <p className="noDataText">No hay recursos para el producto seleccionado</p>
+              ) : (
+                <div className="tableContainer">
+                  <table className="table">
+                    <thead className="tableHead">
                       <tr>
-                        <th style={styles.tableHeader}>Producto</th>
-                        <th style={styles.tableHeader}>Cantidad</th>
-                        {resultado.produccion ? (
-                          <>
-                            <th style={styles.tableHeader}>Utilidad Unitaria</th>
-                            <th style={styles.tableHeader}>Utilidad Total</th>
-                          </>
-                        ) : (
-                          <>
-                            <th style={styles.tableHeader}>Costo Unitario</th>
-                            <th style={styles.tableHeader}>Costo Total</th>
-                          </>
-                        )}
+                        <th className="tableHeader">ID</th>
+                        <th className="tableHeader">Recurso</th>
+                        <th className="tableHeader">Cantidad</th>
+                        <th className="tableHeader">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {(resultado.produccion || resultado.plan_produccion).map((prod, i) => (
-                        <tr key={i} style={i % 2 === 0 ? styles.tableRow : {...styles.tableRow, ...styles.tableRowAlternate}}>
-                          <td style={styles.tableCellBold}>{prod.nombre || 'Sin nombre'}</td>
-                          <td style={styles.tableCell}>{prod.cantidad ?? 0}</td>
-                          {resultado.produccion ? (
-                            <>
-                              <td style={styles.tableCell}>{prod.utilidad_unitaria ?? 0} BOB</td>
-                              <td style={styles.tableCell}>{prod.utilidad_total ?? 0} BOB</td>
-                            </>
-                          ) : (
-                            <>
-                              <td style={styles.tableCell}>{prod.costo_unitario ?? 0} BOB</td>
-                              <td style={styles.tableCell}>{prod.costo_total ?? 0} BOB</td>
-                            </>
-                          )}
+                      {productoRecursos.map((asig, i) => (
+                        <tr
+                          key={asig.id || i}
+                          className={i % 2 === 0 ? "tableRow" : "tableRow tableRowAlternate"}
+                        >
+                          <td className="tableCell">{asig.id}</td>
+                          <td className="tableCell">{asig.recurso_nombre}</td>
+                          <td className="tableCell">{asig.cantidad_requerida}</td>
+                          <td className="tableCell actionContainer">
+                            <button
+                              onClick={() => handleEliminarAsignacion(asig.id)}
+                              className="deleteButton btn-delete"
+                            >
+                              🗑️ Eliminar
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+          </div>
+        )}
 
-            {/* Variables personalizadas */}
-            {resultado.valores_variables && Object.keys(resultado.valores_variables).length > 0 && (
-              <div style={styles.variablesSection}>
-                <h3 style={styles.sectionTitle}>Valores de Variables</h3>
-                <div style={styles.variablesGrid}>
-                  {Object.entries(resultado.valores_variables).map(([variable, valor]) => (
-                    <div key={variable} style={styles.variableCard}>
-                      <span style={styles.variableName}>{variable}:</span>
-                      <span style={styles.variableValue}>{valor ?? 0}</span>
-                    </div>
-                  ))}
+        {activeTab === "historial" && (
+          <div className="formContainer">
+            <h2 className="formTitle">📜 Historial de Producción</h2>
+            <div className="createSection">
+              <h3 className="sectionTitle">➕ Nueva Producción</h3>
+              <div className="formGrid">
+                <div>
+                  <label className="formLabel">Fecha:</label>
+                  <input
+                    className="InputProyecto formInput"
+                    type="date"
+                    value={nuevaProduccion.fecha}
+                    onChange={(e) =>
+                      setNuevaProduccion({ ...nuevaProduccion, fecha: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="formLabel">ID Producto:</label>
+                  <input
+                    className="InputProyecto formInput"
+                    type="number"
+                    value={nuevaProduccion.producto_id}
+                    onChange={(e) =>
+                      setNuevaProduccion({ ...nuevaProduccion, producto_id: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="formLabel">Cantidad:</label>
+                  <input
+                    className="InputProyecto formInput"
+                    type="number"
+                    value={nuevaProduccion.cantidad}
+                    onChange={(e) =>
+                      setNuevaProduccion({ ...nuevaProduccion, cantidad: e.target.value })
+                    }
+                  />
                 </div>
               </div>
-            )}
+              <button
+                onClick={handleCrearProduccion}
+                className="submitButton submitButtonCreate btn-create"
+              >
+                💾 Guardar Producción
+              </button>
+            </div>
+
+            <div className="historialList" style={{ marginTop: 20 }}>
+              <h3 className="sectionTitle">📋 Producciones Registradas</h3>
+              {produccionesDiarias.length === 0 ? (
+                <p className="noDataText">No hay producciones registradas</p>
+              ) : (
+                <div className="tableContainer">
+                  <table className="table">
+                    <thead className="tableHead">
+                      <tr>
+                        <th className="tableHeader">ID</th>
+                        <th className="tableHeader">Fecha</th>
+                        <th className="tableHeader">Producto</th>
+                        <th className="tableHeader">Cantidad</th>
+                        <th className="tableHeader">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {produccionesDiarias.map((prod, i) => (
+                        <tr
+                          key={prod.id}
+                          className={i % 2 === 0 ? "tableRow" : "tableRow tableRowAlternate"}
+                        >
+                          <td className="tableCell">{prod.id}</td>
+                          <td className="tableCell">{prod.fecha || "N/A"}</td>
+                          <td className="tableCell">{prod.producto_id}</td>
+                          <td className="tableCell">{prod.cantidad}</td>
+                          <td className="tableCell actionContainer">
+                            <button
+                              onClick={() => handleAnularProduccion(prod.id)}
+                              className="deleteButton btn-delete"
+                            >
+                              ❌ Anular
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
+        )}
+      </div>
+
+      {error && (
+        <div className="admin-error" role="alert">
+          ❌ {error}
+        </div>
+      )}
+
+      {loading && (
+        <div className="admin-loading">
+          ⏳ Procesando...
+        </div>
+      )}
+
+      {/* RESULTADOS: renderizado estilizado según tipo de respuesta (optimizar / sensibilidad / planificar) */}
+      {resultado && !loading && (
+        <div className="resultadoContainer" style={{ marginTop: 20 }}>
+          <h2 className="formTitle">
+            {resultado.success ? "✅ Resultado" : "❌ Resultado"}
+          </h2>
+
+          {!resultado.success ? (
+            <div className="admin-error">{resultado.message || "Error"}</div>
+          ) : (
+            <>
+              {/* 1) Análisis de sensibilidad (estructura ejemplo proporcionada) */}
+              {resultado.recurso && (resultado.produccion_nueva || resultado.produccion_original) && (
+                <div className="formContainer">
+                  <h3 className="sectionTitle">📊 Resultado - Análisis de Sensibilidad</h3>
+
+                  <div className="stats-container" style={{ marginTop: 8 }}>
+                    <div className="stat-card">
+                      <h4 className="statTitle">🔧 Recurso</h4>
+                      <p className="statValue">{resultado.recurso}</p>
+                    </div>
+                    <div className="stat-card">
+                      <h4 className="statTitle">📈 Valor (antes → ahora)</h4>
+                      <p className="statValue">{resultado.valor_original} → {resultado.valor_nuevo}</p>
+                    </div>
+                    <div className="stat-card">
+                      <h4 className="statTitle">💸 Diferencia Utilidad</h4>
+                      <p className="statValue">{Number(resultado.diferencia_utilidad || 0).toFixed(2)} Bs</p>
+                    </div>
+                    <div className="stat-card">
+                      <h4 className="statTitle">📊 ROI / unidad</h4>
+                      <p className="statValue">{Number(resultado.roi_por_unidad || 0).toFixed(2)} Bs</p>
+                    </div>
+                  </div>
+
+                  <div className="recomendacionCard" style={{ marginTop: 12 }}>
+                    <p className="recomendacionMensaje">{resultado.recomendacion}</p>
+                  </div>
+
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                      <div style={{ flex: 1, minWidth: 280 }}>
+                        <h4 className="sectionTitle">🔎 Producción - Original</h4>
+                        {Array.isArray(resultado.produccion_original) && resultado.produccion_original.length > 0 ? (
+                          <div className="tableContainer">
+                            <table className="table">
+                              <thead className="tableHead">
+                                <tr>
+                                  <th className="tableHeader">Producto</th>
+                                  <th className="tableHeader">Cantidad</th>
+                                  <th className="tableHeader">Margen</th>
+                                  <th className="tableHeader">Utilidad</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {resultado.produccion_original.map((p, i) => (
+                                  <tr key={i} className={i % 2 === 0 ? "tableRow" : "tableRow tableRowAlternate"}>
+                                    <td className="tableCellBold">{p.nombre}</td>
+                                    <td className="tableCell">{p.cantidad_producir}</td>
+                                    <td className="tableCell">{p.margen_unitario} Bs</td>
+                                    <td className="tableCell">{p.utilidad_total} Bs</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        ) : <p className="noDataText">Sin datos originales</p>}
+                      </div>
+
+                      <div style={{ flex: 1, minWidth: 280 }}>
+                        <h4 className="sectionTitle">✨ Producción - Nuevo</h4>
+                        {Array.isArray(resultado.produccion_nueva) && resultado.produccion_nueva.length > 0 ? (
+                          <div className="tableContainer">
+                            <table className="table">
+                              <thead className="tableHead">
+                                <tr>
+                                  <th className="tableHeader">Producto</th>
+                                  <th className="tableHeader">Cantidad</th>
+                                  <th className="tableHeader">Margen</th>
+                                  <th className="tableHeader">Utilidad</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {resultado.produccion_nueva.map((p, i) => (
+                                  <tr key={i} className={i % 2 === 0 ? "tableRow" : "tableRow tableRowAlternate"}>
+                                    <td className="tableCellBold">{p.nombre}</td>
+                                    <td className="tableCell">{Number(p.cantidad_producir).toFixed(2)}</td>
+                                    <td className="tableCell">{p.margen_unitario} Bs</td>
+                                    <td className="tableCell">{Number(p.utilidad_total).toFixed(2)} Bs</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        ) : <p className="noDataText">Sin datos nuevos</p>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 2) Optimización (estructura optimizar) */}
+              {resultado.utilidad_maxima !== undefined && (
+                <div className="formContainer" style={{ marginTop: 12 }}>
+                  <h3 className="sectionTitle">🎯 Resultado - Optimización</h3>
+
+                  <div className="stats-container" style={{ marginTop: 8 }}>
+                    <div className="stat-card">
+                      <h4 className="statTitle">💰 Utilidad Máxima</h4>
+                      <p className="statValue">{Number(resultado.utilidad_maxima).toFixed(2)} Bs</p>
+                    </div>
+                    <div className="stat-card">
+                      <h4 className="statTitle">📦 Productos a Producir</h4>
+                      <p className="statValue">{resultado.produccion?.length || 0}</p>
+                    </div>
+                    <div className="stat-card">
+                      <h4 className="statTitle">🚨 Recursos Saturados</h4>
+                      <p className="statValue">{resultado.resumen?.recursos_saturados || 0}</p>
+                    </div>
+                    <div className="stat-card">
+                      <h4 className="statTitle">📊 Total Productos</h4>
+                      <p className="statValue">{resultado.resumen?.total_productos || 0}</p>
+                    </div>
+                  </div>
+
+                  {/* tabla producción */}
+                  {Array.isArray(resultado.produccion) && resultado.produccion.length > 0 && (
+                    <div className="tableContainer" style={{ marginTop: 12 }}>
+                      <h4 className="sectionTitle">📊 Plan de Producción Óptima</h4>
+                      <table className="table">
+                        <thead className="tableHead">
+                          <tr>
+                            <th className="tableHeader">Producto</th>
+                            <th className="tableHeader">Cantidad</th>
+                            <th className="tableHeader">Margen</th>
+                            <th className="tableHeader">Utilidad</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {resultado.produccion.map((p, i) => (
+                            <tr key={i} className={i % 2 === 0 ? "tableRow" : "tableRow tableRowAlternate"}>
+                              <td className="tableCellBold">{p.nombre}</td>
+                              <td className="tableCell">{p.cantidad_producir}</td>
+                              <td className="tableCell">{p.margen_unitario} Bs</td>
+                              <td className="tableCell">{p.utilidad_total} Bs</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* tabla recursos */}
+                  {Array.isArray(resultado.recursos) && resultado.recursos.length > 0 && (
+                    <div className="tableContainer" style={{ marginTop: 12 }}>
+                      <h4 className="sectionTitle">🔧 Estado de Recursos</h4>
+                      <table className="table">
+                        <thead className="tableHead">
+                          <tr>
+                            <th className="tableHeader">Recurso</th>
+                            <th className="tableHeader">Disponible</th>
+                            <th className="tableHeader">Usado</th>
+                            <th className="tableHeader">% Uso</th>
+                            <th className="tableHeader">Precio Sombra</th>
+                            <th className="tableHeader">Estado</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {resultado.recursos.map((r, i) => (
+                            <tr key={i} className={i % 2 === 0 ? "tableRow" : "tableRow tableRowAlternate"}>
+                              <td className="tableCellBold">{r.recurso}</td>
+                              <td className="tableCell">{r.disponible}</td>
+                              <td className="tableCell">{r.usado}</td>
+                              <td className="tableCell">{r.porcentaje_uso}%</td>
+                              <td className="tableCell">{r.precio_sombra} Bs</td>
+                              <td className="tableCell">
+                                <span className={`statusBadge ${r.estado === 'Saturado' ? 'statusInactive' : 'statusActive'}`}>
+                                  {r.estado}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* recomendaciones */}
+                  {Array.isArray(resultado.recomendaciones) && resultado.recomendaciones.length > 0 && (
+                    <div style={{ marginTop: 12 }}>
+                      <h4 className="sectionTitle">💡 Recomendaciones</h4>
+                      {resultado.recomendaciones.map((rec, i) => (
+                        <div key={i} className="recomendacionCard" style={{ borderLeft: `4px solid ${rec.prioridad === 'ALTA' ? '#f44336' : rec.prioridad === 'MEDIA' ? '#FF9800' : '#4CAF50'}`, marginBottom: 8 }}>
+                          <div className="recomendacionHeader">
+                            <span className="recomendacionTipo">{rec.tipo || rec.recurso || 'RECOMENDACIÓN'}</span>
+                            <span className="recomendacionPrioridad">{rec.prioridad}</span>
+                          </div>
+                          <p className="recomendacionMensaje">{rec.mensaje}</p>
+                          {rec.accion && <p className="recomendacionAccion"><strong>Acción:</strong> {rec.accion}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 3) Planificación por período */}
+              {resultado.periodo_dias !== undefined && (
+                <div className="formContainer" style={{ marginTop: 12 }}>
+                  <h3 className="sectionTitle">📅 Resultado - Planificación por Período</h3>
+
+                  <div className="stats-container" style={{ marginTop: 8 }}>
+                    <div className="stat-card">
+                      <h4 className="statTitle">🗓️ Días</h4>
+                      <p className="statValue">{resultado.periodo_dias}</p>
+                    </div>
+                    <div className="stat-card">
+                      <h4 className="statTitle">💰 Utilidad Total</h4>
+                      <p className="statValue">{Number(resultado.utilidad_total_periodo || 0).toFixed(2)} Bs</p>
+                    </div>
+                    <div className="stat-card">
+                      <h4 className="statTitle">📈 Utilidad Diaria</h4>
+                      <p className="statValue">{Number(resultado.resumen?.utilidad_diaria || 0).toFixed(2)} Bs</p>
+                    </div>
+                  </div>
+
+                  {Array.isArray(resultado.produccion_total_periodo) && resultado.produccion_total_periodo.length > 0 && (
+                    <div className="tableContainer" style={{ marginTop: 12 }}>
+                      <h4 className="sectionTitle">📦 Producción Total del Período</h4>
+                      <table className="table">
+                        <thead className="tableHead">
+                          <tr>
+                            <th className="tableHeader">Producto</th>
+                            <th className="tableHeader">Cantidad Total</th>
+                            <th className="tableHeader">Utilidad Total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {resultado.produccion_total_periodo.map((p, i) => (
+                            <tr key={i} className={i % 2 === 0 ? "tableRow" : "tableRow tableRowAlternate"}>
+                              <td className="tableCellBold">{p.nombre}</td>
+                              <td className="tableCell">{p.cantidad_total_periodo}</td>
+                              <td className="tableCell">{p.utilidad_total_periodo} Bs</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {Array.isArray(resultado.recursos_necesarios_periodo) && resultado.recursos_necesarios_periodo.length > 0 && (
+                    <div className="tableContainer" style={{ marginTop: 12 }}>
+                      <h4 className="sectionTitle">🔧 Recursos Necesarios (Periodo)</h4>
+                      <table className="table">
+                        <thead className="tableHead">
+                          <tr>
+                            <th className="tableHeader">Recurso</th>
+                            <th className="tableHeader">Por día</th>
+                            <th className="tableHeader">Total requerido</th>
+                            <th className="tableHeader">Disponible total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {resultado.recursos_necesarios_periodo.map((r, i) => (
+                            <tr key={i} className={i % 2 === 0 ? "tableRow" : "tableRow tableRowAlternate"}>
+                              <td className="tableCellBold">{r.recurso}</td>
+                              <td className="tableCell">{r.necesario_por_dia}</td>
+                              <td className="tableCell">{r.necesario_total}</td>
+                              <td className="tableCell">{r.disponible_total}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
     </div>
   );
 }
-
-const styles = {
-  container: {
-    color: '#fff',
-    minHeight: '100vh',
-    padding: '20px',
-    fontFamily: "'Segoe UI', sans-serif",
-    maxWidth: '1400px',
-    margin: '0 auto'
-  },
-  title: {
-    marginBottom: '30px',
-    textAlign: 'center',
-    fontSize: '28px',
-    fontWeight: '700',
-    textShadow: '0 2px 4px rgba(0,0,0,0.5)'
-  },
-  tabContainer: {
-    marginBottom: '30px'
-  },
-  tabWrapper: {
-    display: 'flex',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: '8px',
-    padding: '4px',
-    gap: '4px'
-  },
-  tabButton: {
-    flex: 1,
-    padding: '12px 24px',
-    border: 'none',
-    borderRadius: '6px',
-    color: '#fff',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease'
-  },
-  tabButtonActive: {
-    backgroundColor: '#2196F3'
-  },
-  tabButtonInactive: {
-    backgroundColor: 'transparent'
-  },
-  tabContent: {
-    marginTop: '20px'
-  },
-  formContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    padding: '25px',
-    borderRadius: '8px',
-    border: '1px solid #444'
-  },
-  formTitle: {
-    marginBottom: '10px',
-    fontSize: '22px',
-    fontWeight: '700'
-  },
-  description: {
-    color: '#bdc3c7',
-    marginBottom: '25px',
-    fontSize: '14px'
-  },
-  sectionTitle: {
-    fontSize: '18px',
-    marginBottom: '15px',
-    marginTop: '20px',
-    color: '#ecf0f1',
-    fontWeight: '600'
-  },
-  inputGroup: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr auto',
-    gap: '10px',
-    marginBottom: '10px'
-  },
-  formGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-    gap: '15px',
-    marginBottom: '20px',
-    marginTop: '20px'
-  },
-  formLabel: {
-    display: 'block',
-    marginBottom: '5px',
-    fontSize: '14px',
-    color: '#ecf0f1'
-  },
-  formInput: {
-    width: '100%',
-    padding: '10px',
-    borderRadius: '4px',
-    border: '1px solid #555',
-    backgroundColor: '#222',
-    color: '#fff',
-    boxSizing: 'border-box',
-    fontSize: '14px'
-  },
-  buttonGroup: {
-    display: 'flex',
-    gap: '10px',
-    marginTop: '20px',
-    flexWrap: 'wrap'
-  },
-  addButton: {
-    padding: '10px 20px',
-    backgroundColor: '#2980b9',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '600',
-    transition: 'all 0.3s ease'
-  },
-  deleteButton: {
-    padding: '6px 12px',
-    backgroundColor: '#e74c3c',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '12px'
-  },
-  submitButton: {
-    padding: '12px 24px',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    transition: 'all 0.3s ease'
-  },
-  submitButtonCreate: {
-    backgroundColor: '#4CAF50'
-  },
-  submitButtonUpdate: {
-    backgroundColor: '#FF9800'
-  },
-  exampleButton: {
-    padding: '12px 24px',
-    backgroundColor: '#08116098',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '600',
-    marginBottom: '20px',
-    width: '100%'
-  },
-  loadingText: {
-    textAlign: 'center',
-    fontSize: '18px',
-    padding: '20px',
-    color: '#2196F3'
-  },
-  errorMessage: {
-    backgroundColor: 'rgba(244, 67, 54, 0.2)',
-    border: '1px solid #f44336',
-    color: '#f44336',
-    padding: '15px',
-    borderRadius: '8px',
-    marginTop: '20px',
-    textAlign: 'center'
-  },
-  resultadoContainer: {
-    marginTop: '30px'
-  },
-  resultadoTitle: {
-    fontSize: '24px',
-    marginBottom: '20px',
-    textAlign: 'center',
-    fontWeight: '700'
-  },
-  resultadoCard: {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    padding: '25px',
-    borderRadius: '12px',
-    border: '1px solid #444'
-  },
-  statsContainer: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '15px',
-    marginBottom: '30px'
-  },
-  statCard: {
-    padding: '20px',
-    borderRadius: '8px',
-    textAlign: 'center'
-  },
-  statCardTotal: {
-    backgroundColor: 'rgba(33, 150, 243, 0.2)'
-  },
-  statTitle: {
-    margin: '0 0 10px 0',
-    fontSize: '14px',
-    fontWeight: '600'
-  },
-  statTitleTotal: {
-    color: '#2196F3'
-  },
-  statValue: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    margin: '0'
-  },
-  tableSection: {
-    marginTop: '30px'
-  },
-  tableContainer: {
-    overflowX: 'auto',
-    marginTop: '15px'
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: '8px',
-    overflow: 'hidden'
-  },
-  tableHead: {
-    backgroundColor: '#333'
-  },
-  tableHeader: {
-    padding: '15px',
-    borderBottom: '2px solid #555',
-    textAlign: 'left',
-    fontWeight: '600'
-  },
-  tableRow: {
-    borderBottom: '1px solid #555'
-  },
-  tableRowAlternate: {
-    backgroundColor: 'rgba(255,255,255,0.05)'
-  },
-  tableCell: {
-    padding: '12px'
-  },
-  tableCellBold: {
-    padding: '12px',
-    fontWeight: 'bold'
-  },
-  variablesSection: {
-    marginTop: '30px'
-  },
-  variablesGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-    gap: '15px',
-    marginTop: '15px'
-  },
-  variableCard: {
-    backgroundColor: 'rgba(33, 150, 243, 0.2)',
-    padding: '15px',
-    borderRadius: '8px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    border: '1px solid #2196F3'
-  },
-  variableName: {
-    fontSize: '14px',
-    color: '#bdc3c7',
-    fontWeight: '600'
-  },
-  variableValue: {
-    fontSize: '20px',
-    color: '#fff',
-    fontWeight: 'bold'
-  }
-};
