@@ -1,6 +1,8 @@
 import { connect } from '../database';
 import highs from 'highs';
 
+
+
 async function optimizarProduccion() {
   try {
     const highsInstance = await highs();
