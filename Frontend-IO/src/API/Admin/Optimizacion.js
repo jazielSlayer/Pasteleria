@@ -1,63 +1,5 @@
 import { API_URL } from "../Api.js";
 
-/* ==================== PRODUCCIÓN DIARIA ==================== */
-
-/**
- * Obtiene todas las producciones diarias registradas
- * @returns {Promise<Array>} - Lista de producciones diarias
- */
-export async function getProduccionDiaria() {
-  const res = await fetch(`${API_URL}/produccion/diaria`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
-  if (!res.ok) throw new Error("Error al obtener producción diaria");
-  return res.json();
-}
-
-/**
- * Obtiene una producción específica por ID
- * @param {number} id - ID de la producción
- * @returns {Promise<Object>} - Datos de la producción
- */
-export async function getProduccion(id) {
-  const res = await fetch(`${API_URL}/produccion/diaria/${id}`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
-  if (!res.ok) throw new Error("Error al obtener la producción");
-  return res.json();
-}
-
-/**
- * Crea un nuevo registro de producción diaria
- * @param {Object} produccionData - Datos de la producción
- * @returns {Promise<Object>} - Producción creada
- */
-export async function createProduccion(produccionData) {
-  const res = await fetch(`${API_URL}/produccion/diaria/crear`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(produccionData),
-  });
-  if (!res.ok) throw new Error("Error al crear producción");
-  return res.json();
-}
-
-/**
- * Anula una producción existente
- * @param {number} id - ID de la producción a anular
- * @returns {Promise<Object>} - Confirmación de anulación
- */
-export async function anularProduccion(id) {
-  const res = await fetch(`${API_URL}/produccion/anular/${id}`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
-  if (!res.ok) throw new Error("Error al anular producción");
-  return res.json();
-}
-
 /* ==================== OPTIMIZACIÓN DE PRODUCCIÓN ==================== */
 
 /**
@@ -109,11 +51,37 @@ export async function planificarProduccionPeriodo(dias) {
 }
 
 /**
+ * Maximiza las ganancias con coeficientes de ganancia
+ * @returns {Promise<Object>} Resultado de la optimización con ecuación detallada
+ */
+export async function maximizarGanancias() {
+  const res = await fetch(`${API_URL}/maximizar-ganancias`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error("Error al maximizar ganancias");
+  return res.json();
+}
+
+/**
+ * Analiza la sensibilidad de los coeficientes de ganancia
+ * @returns {Promise<Object>} Análisis de sensibilidad de coeficientes
+ */
+export async function analizarCoeficientes() {
+  const res = await fetch(`${API_URL}/analizar-coeficientes`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error("Error al analizar coeficientes");
+  return res.json();
+}
+
+/**
  * Health check del servicio de optimización
  * @returns {Promise<Object>} Estado del servicio
  */
 export async function checkHealthOptimizacion() {
-  const res = await fetch(`${API_URL}/produccion/health`, {
+  const res = await fetch(`${API_URL}/health`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
@@ -229,187 +197,6 @@ export async function simularCambiosMultiples(cambios) {
       ? `Los cambios propuestos generarían ${utilidadTotal.toFixed(2)} Bs adicionales`
       : "Los cambios propuestos no mejoran la utilidad"
   };
-}
-
-/* ==================== RECURSOS DE PRODUCCIÓN ==================== */
-
-/**
- * Obtiene todos los recursos de producción configurados
- * @returns {Promise<Array>} Lista de recursos con su disponibilidad
- */
-export async function getRecursosProduccion() {
-  const res = await fetch(`${API_URL}/recursos-produccion`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
-  if (!res.ok) throw new Error("Error al obtener recursos de producción");
-  return res.json();
-}
-
-/**
- * Crea un nuevo recurso de producción
- * @param {Object} recursoData - { nombre, cantidad_disponible, unidad }
- * @returns {Promise<Object>} Recurso creado
- */
-export async function createRecursoProduccion(recursoData) {
-  const res = await fetch(`${API_URL}/recursos-produccion/crear`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(recursoData),
-  });
-  if (!res.ok) throw new Error("Error al crear recurso");
-  return res.json();
-}
-
-/**
- * Actualiza un recurso de producción existente
- * @param {number} id - ID del recurso
- * @param {Object} recursoData - Datos actualizados
- * @returns {Promise<Object>} Recurso actualizado
- */
-export async function updateRecursoProduccion(id, recursoData) {
-  const res = await fetch(`${API_URL}/recursos-produccion/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(recursoData),
-  });
-  if (!res.ok) throw new Error("Error al actualizar recurso");
-  return res.json();
-}
-
-/**
- * Elimina un recurso de producción
- * @param {number} id - ID del recurso a eliminar
- * @returns {Promise<Object>} Confirmación
- */
-export async function deleteRecursoProduccion(id) {
-  const res = await fetch(`${API_URL}/recursos-produccion/${id}`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-  });
-  if (!res.ok) throw new Error("Error al eliminar recurso");
-  return res.json();
-}
-
-/* ==================== PRODUCTO-RECURSOS (Configuración) ==================== */
-
-/**
- * Obtiene los recursos asignados a un producto específico
- * @param {number} productoId - ID del producto
- * @returns {Promise<Array>} Lista de recursos con cantidades requeridas
- */
-export async function getRecursosProducto(productoId) {
-  const res = await fetch(`${API_URL}/producto-recursos/${productoId}`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
-  if (!res.ok) throw new Error("Error al obtener recursos del producto");
-  return res.json();
-}
-
-/**
- * Asigna recursos a un producto
- * @param {Object} asignacionData - { producto_id, recurso_nombre, cantidad_requerida }
- * @returns {Promise<Object>} Asignación creada
- */
-export async function asignarRecursoAProducto(asignacionData) {
-  const res = await fetch(`${API_URL}/producto-recursos/asignar`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(asignacionData),
-  });
-  if (!res.ok) throw new Error("Error al asignar recurso al producto");
-  return res.json();
-}
-
-/**
- * Actualiza la cantidad de recurso requerida por un producto
- * @param {number} id - ID de la asignación
- * @param {number} cantidadRequerida - Nueva cantidad
- * @returns {Promise<Object>} Asignación actualizada
- */
-export async function updateRecursoProducto(id, cantidadRequerida) {
-  const res = await fetch(`${API_URL}/producto-recursos/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cantidad_requerida: cantidadRequerida }),
-  });
-  if (!res.ok) throw new Error("Error al actualizar recurso del producto");
-  return res.json();
-}
-
-/**
- * Elimina la asignación de un recurso a un producto
- * @param {number} id - ID de la asignación
- * @returns {Promise<Object>} Confirmación
- */
-export async function deleteRecursoProducto(id) {
-  const res = await fetch(`${API_URL}/producto-recursos/${id}`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-  });
-  if (!res.ok) throw new Error("Error al eliminar asignación");
-  return res.json();
-}
-
-/* ==================== DEMANDAS MÁXIMAS ==================== */
-
-/**
- * Obtiene todas las demandas máximas configuradas
- * @returns {Promise<Array>} Lista de demandas por producto
- */
-export async function getDemandasMaximas() {
-  const res = await fetch(`${API_URL}/demandas-maximas`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
-  if (!res.ok) throw new Error("Error al obtener demandas máximas");
-  return res.json();
-}
-
-/**
- * Configura la demanda máxima para un producto
- * @param {Object} demandaData - { producto_id, cantidad_maxima }
- * @returns {Promise<Object>} Demanda configurada
- */
-export async function setDemandaMaxima(demandaData) {
-  const res = await fetch(`${API_URL}/demandas-maximas/configurar`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(demandaData),
-  });
-  if (!res.ok) throw new Error("Error al configurar demanda máxima");
-  return res.json();
-}
-
-/**
- * Actualiza la demanda máxima de un producto
- * @param {number} productoId - ID del producto
- * @param {number} cantidadMaxima - Nueva cantidad máxima
- * @returns {Promise<Object>} Demanda actualizada
- */
-export async function updateDemandaMaxima(productoId, cantidadMaxima) {
-  const res = await fetch(`${API_URL}/demandas-maximas/${productoId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cantidad_maxima: cantidadMaxima }),
-  });
-  if (!res.ok) throw new Error("Error al actualizar demanda máxima");
-  return res.json();
-}
-
-/**
- * Elimina la restricción de demanda máxima de un producto
- * @param {number} productoId - ID del producto
- * @returns {Promise<Object>} Confirmación
- */
-export async function deleteDemandaMaxima(productoId) {
-  const res = await fetch(`${API_URL}/demandas-maximas/${productoId}`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-  });
-  if (!res.ok) throw new Error("Error al eliminar demanda máxima");
-  return res.json();
 }
 
 /* ==================== VALIDACIONES Y HELPERS ==================== */

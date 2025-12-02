@@ -1,6 +1,412 @@
 import { connect } from '../database';
 import highs from 'highs';
 
+/**
+ * MÉTODO IMPLEMENTADO: Programación Lineal con Coeficientes de Ganancia
+ * 
+ * ECUACIÓN DEL MODELO:
+ * 
+ * Maximizar: Z = c₁·x₁ + c₂·x₂ + c₃·x₃ + ... + cₙ·xₙ
+ * 
+ * Donde:
+ * - xᵢ = cantidad a producir del producto i
+ * - cᵢ = coeficiente de ganancia del producto i (margen_unitario)
+ * - cᵢ = precio_venta_i - (costo_materiales_i + costo_mano_obra_i + costo_energia_i)
+ * 
+ * Ejemplo para 3 productos:
+ * Z = 40x₁ + 8x₂ + 2x₃
+ * 
+ * Sujeto a:
+ * 1. Restricciones de recursos: Σ(uso_recurso_j_i · xᵢ) ≤ capacidad_j  ∀j∈Recursos
+ * 2. Restricciones de demanda: xᵢ ≤ demanda_maxima_i  ∀i∈Productos
+ * 3. No negatividad: xᵢ ≥ 0  ∀i∈Productos
+ * 
+ * TÉCNICA: Programación Lineal Simplex para maximizar la función objetivo
+ * sujeta a restricciones lineales.
+ */
+
+async function optimizarGananciasYCostos() {
+  try {
+    const highsInstance = await highs();
+    const pool = connect();
+
+    // Obtener productos con sus coeficientes de ganancia (cᵢ)
+    const [products] = await pool.execute(`
+      SELECT 
+        p.producto_id,
+        p.nombre,
+        p.precio_venta,
+        COALESCE(
+          SUM(rd.cantidad * mp.costo_promedio) / r.porciones_salida, 0
+        ) as costo_materiales,
+        COALESCE(r.costo_mano_obra / r.porciones_salida, 0) as costo_mano_obra,
+        COALESCE(r.costo_energia / r.porciones_salida, 0) as costo_energia,
+        p.precio_venta - (
+          COALESCE(SUM(rd.cantidad * mp.costo_promedio) / r.porciones_salida, 0) +
+          COALESCE(r.costo_mano_obra / r.porciones_salida, 0) +
+          COALESCE(r.costo_energia / r.porciones_salida, 0)
+        ) as coeficiente_ganancia
+      FROM productos p
+      LEFT JOIN recetas r ON p.producto_id = r.producto_id
+      LEFT JOIN recetadetalle rd ON r.receta_id = rd.receta_id
+      LEFT JOIN materiasprimas mp ON rd.materia_id = mp.materia_id
+      WHERE p.activo = 1
+      GROUP BY p.producto_id, r.porciones_salida, r.costo_mano_obra, r.costo_energia
+      HAVING coeficiente_ganancia > 0
+    `);
+
+    if (products.length === 0) {
+      return {
+        success: false,
+        message: 'No hay productos con coeficiente de ganancia positivo'
+      };
+    }
+
+    // Obtener recursos disponibles
+    const [resources] = await pool.execute(
+      'SELECT nombre, cantidad_disponible FROM recursos_produccion WHERE cantidad_disponible > 0'
+    );
+
+    console.log(`\n🔍 DIAGNÓSTICO:`);
+    console.log(`   - Productos encontrados: ${products.length}`);
+    console.log(`   - Recursos disponibles: ${resources.length}`);
+
+    // Obtener consumo de recursos por producto
+    const [usages] = await pool.execute(
+      'SELECT producto_id, recurso_nombre, cantidad_requerida FROM producto_recursos WHERE cantidad_requerida > 0'
+    );
+
+    console.log(`   - Registros de uso de recursos: ${usages.length}`);
+
+    // Verificar qué productos tienen recursos asignados
+    const productosConRecursos = new Set(usages.map(u => u.producto_id));
+    const productosValidos = products.filter(p => productosConRecursos.has(p.producto_id));
+
+    console.log(`   - Productos con recursos asignados: ${productosValidos.length}`);
+
+    if (productosValidos.length === 0) {
+      return {
+        success: false,
+        message: 'PROBLEMA: Ningún producto tiene recursos asignados en la tabla producto_recursos.',
+        diagnostico: {
+          productos_encontrados: products.length,
+          productos_sin_recursos: products.map(p => p.nombre),
+          solucion: 'Debes insertar datos en la tabla producto_recursos para asignar recursos a cada producto.'
+        }
+      };
+    }
+
+    // Usar solo productos que tienen recursos
+    const productsToOptimize = productosValidos;
+
+    // Obtener demandas máximas
+    const [demandas] = await pool.execute(
+      'SELECT producto_id, cantidad_maxima FROM demandas_maximas'
+    );
+
+    // Crear mapeo de productos con sus coeficientes
+    const varMap = {};
+    const varNames = [];
+    
+    productsToOptimize.forEach((p, index) => {
+      const varName = `x${index + 1}`;
+      const costoTotal = parseFloat(p.costo_materiales) + 
+                        parseFloat(p.costo_mano_obra) + 
+                        parseFloat(p.costo_energia);
+      
+      varMap[p.producto_id] = {
+        varName,
+        nombre: p.nombre,
+        coeficiente: parseFloat(p.coeficiente_ganancia), // cᵢ en la ecuación
+        costo_total: costoTotal,
+        precio_venta: parseFloat(p.precio_venta),
+        costo_materiales: parseFloat(p.costo_materiales),
+        costo_mano_obra: parseFloat(p.costo_mano_obra),
+        costo_energia: parseFloat(p.costo_energia),
+        producto_id: p.producto_id
+      };
+      varNames.push(varName);
+    });
+
+    // Crear mapeo de recursos
+    const resMap = {};
+    resources.forEach(r => {
+      resMap[r.nombre] = parseFloat(r.cantidad_disponible);
+    });
+
+    // Crear mapeo de uso de recursos
+    const usageMap = {};
+    Object.keys(resMap).forEach(res => {
+      usageMap[res] = {};
+    });
+    usages.forEach(u => {
+      if (usageMap[u.recurso_nombre] && varMap[u.producto_id]) {
+        usageMap[u.recurso_nombre][u.producto_id] = parseFloat(u.cantidad_requerida);
+      }
+    });
+
+    // Crear mapeo de demandas
+    const demandaMap = {};
+    demandas.forEach(d => {
+      demandaMap[d.producto_id] = parseInt(d.cantidad_maxima);
+    });
+
+    // Construir modelo LP según la ecuación: Z = c₁·x₁ + c₂·x₂ + ... + cₙ·xₙ
+    let lp = 'Maximize\n';
+
+    // Función objetivo: Z = Σ(coeficiente_i · x_i)
+    const objTerms = productsToOptimize.map((p, i) => {
+      const info = varMap[p.producto_id];
+      const coef = info.coeficiente; // cᵢ = margen unitario
+      return `${coef.toFixed(2)} ${varNames[i]}`;
+    });
+
+    lp += 'obj: ' + objTerms.join(' + ') + '\n';
+    
+    // Mostrar ecuación explícita
+    console.log('\n📊 ECUACIÓN DEL MODELO:');
+    console.log('Maximizar: Z = ' + productsToOptimize.map((p, i) => {
+      const coef = varMap[p.producto_id].coeficiente;
+      return `${coef.toFixed(2)}·${varNames[i]}`;
+    }).join(' + '));
+    console.log('\nDonde:');
+    productsToOptimize.forEach((p, i) => {
+      const info = varMap[p.producto_id];
+      console.log(`  ${varNames[i]} = ${info.nombre} (coeficiente: ${info.coeficiente.toFixed(2)} Bs/unidad)`);
+    });
+    
+    lp += 'Subject To\n';
+
+    // Restricciones de recursos
+    let constraintsAdded = 0;
+    Object.keys(resMap).forEach(res => {
+      let terms = [];
+      productsToOptimize.forEach((p, i) => {
+        const usage = usageMap[res][p.producto_id] || 0;
+        if (usage > 0) {
+          terms.push(`${usage} ${varNames[i]}`);
+        }
+      });
+
+      if (terms.length > 0) {
+        const constraintName = res.replace(/\s+/g, '_');
+        lp += `${constraintName}: ${terms.join(' + ')} <= ${resMap[res]}\n`;
+        constraintsAdded++;
+      }
+    });
+
+    console.log(`\n⚙️  Restricciones de recursos agregadas: ${constraintsAdded}`);
+
+    // Si no hay restricciones de recursos, agregar restricciones generales
+    if (constraintsAdded === 0) {
+      console.log('⚠️  ADVERTENCIA: No hay restricciones de recursos. Agregando restricciones por defecto.');
+      
+      // Agregar restricción de producción total
+      lp += `produccion_total: ${varNames.join(' + ')} <= 100\n`;
+      
+      // Agregar restricciones individuales por producto
+      varNames.forEach((v, i) => {
+        lp += `max_${v}: ${v} <= 20\n`;
+      });
+    }
+
+    // Restricciones de demanda
+    let demandasAdded = 0;
+    productsToOptimize.forEach((p, i) => {
+      if (demandaMap[p.producto_id]) {
+        const varName = varNames[i];
+        lp += `demanda_${varName}: ${varName} <= ${demandaMap[p.producto_id]}\n`;
+        demandasAdded++;
+      }
+    });
+
+    console.log(`   Restricciones de demanda agregadas: ${demandasAdded}`);
+
+    // Restricciones de no negatividad
+    lp += 'Bounds\n';
+    varNames.forEach(v => {
+      lp += `${v} >= 0\n`;
+    });
+    lp += 'End\n';
+
+    console.log('\n🔧 Modelo LP generado. Resolviendo...\n');
+
+    // Resolver
+    const results = await highsInstance.solve(lp);
+
+    console.log(`📈 Estado de la solución: ${results.Status}`);
+
+    if (results.Status === 'Optimal') {
+      const produccion = [];
+      let gananciaTotal = 0; // Z óptimo
+      let costoTotal = 0;
+      let ingresoTotal = 0;
+
+      productsToOptimize.forEach((p, i) => {
+        const v = varNames[i];
+        const cantidad = results.Columns[v]?.Primal || 0;
+        
+        if (cantidad > 0.01) {
+          const info = varMap[p.producto_id];
+          const ganancia = cantidad * info.coeficiente; // cᵢ · xᵢ
+          const costo = cantidad * info.costo_total;
+          const ingreso = cantidad * info.precio_venta;
+          
+          gananciaTotal += ganancia;
+          costoTotal += costo;
+          ingresoTotal += ingreso;
+
+          produccion.push({
+            producto_id: p.producto_id,
+            variable: info.varName,
+            nombre: info.nombre,
+            cantidad_producir: Math.round(cantidad * 100) / 100,
+            coeficiente_ci: Math.round(info.coeficiente * 100) / 100,
+            precio_venta: Math.round(info.precio_venta * 100) / 100,
+            costo_unitario: Math.round(info.costo_total * 100) / 100,
+            ingreso_total: Math.round(ingreso * 100) / 100,
+            costo_total: Math.round(costo * 100) / 100,
+            ganancia_total: Math.round(ganancia * 100) / 100,
+            contribucion_z: `${info.coeficiente.toFixed(2)} × ${cantidad.toFixed(2)} = ${ganancia.toFixed(2)} Bs`,
+            detalle_costos: {
+              materiales: Math.round(info.costo_materiales * cantidad * 100) / 100,
+              mano_obra: Math.round(info.costo_mano_obra * cantidad * 100) / 100,
+              energia: Math.round(info.costo_energia * cantidad * 100) / 100
+            }
+          });
+        }
+      });
+
+      // Calcular recursos utilizados
+      const recursosUsados = [];
+      Object.keys(resMap).forEach(res => {
+        let usado = 0;
+        productsToOptimize.forEach(p => {
+          const varName = varMap[p.producto_id].varName;
+          const cantidad = results.Columns[varName]?.Primal || 0;
+          const consumo = usageMap[res][p.producto_id] || 0;
+          usado += cantidad * consumo;
+        });
+
+        const disponible = resMap[res];
+        recursosUsados.push({
+          recurso: res,
+          disponible: Math.round(disponible * 100) / 100,
+          usado: Math.round(usado * 100) / 100,
+          holgura: Math.round((disponible - usado) * 100) / 100,
+          porcentaje_uso: Math.round((usado / disponible) * 100 * 100) / 100
+        });
+      });
+
+      // Construir ecuación con valores óptimos
+      const ecuacionOptima = 'Z = ' + produccion.map(p => 
+        `${p.coeficiente_ci}·${p.cantidad_producir}`
+      ).join(' + ') + ` = ${gananciaTotal.toFixed(2)} Bs`;
+
+      console.log(`\n✅ SOLUCIÓN ÓPTIMA ENCONTRADA`);
+      console.log(`   Z* = ${gananciaTotal.toFixed(2)} Bs`);
+      console.log(`   Productos a producir: ${produccion.length}\n`);
+
+      return {
+        success: true,
+        metodo: 'Programación Lineal - Método Simplex',
+        ecuacion: {
+          forma_general: 'Z = c₁·x₁ + c₂·x₂ + c₃·x₃ + ... + cₙ·xₙ',
+          modelo: 'Z = ' + productsToOptimize.map((p, i) => {
+            const coef = varMap[p.producto_id].coeficiente;
+            return `${coef.toFixed(2)}·${varNames[i]}`;
+          }).join(' + '),
+          solucion_optima: ecuacionOptima,
+          restricciones: [
+            'Σ(uso_recurso_j,i · xᵢ) ≤ capacidad_j  ∀j ∈ Recursos',
+            'xᵢ ≤ demanda_maxima_i  ∀i ∈ Productos',
+            'xᵢ ≥ 0  ∀i ∈ Productos'
+          ]
+        },
+        valor_optimo_z: Math.round(gananciaTotal * 100) / 100,
+        resultados_financieros: {
+          ingreso_total: Math.round(ingresoTotal * 100) / 100,
+          costo_total: Math.round(costoTotal * 100) / 100,
+          ganancia_total: Math.round(gananciaTotal * 100) / 100,
+          margen_porcentual: Math.round((gananciaTotal / ingresoTotal) * 100 * 100) / 100,
+          roi: Math.round((gananciaTotal / costoTotal) * 100 * 100) / 100
+        },
+        produccion: produccion.sort((a, b) => b.ganancia_total - a.ganancia_total),
+        recursos: recursosUsados,
+        resumen: {
+          productos_a_producir: produccion.length,
+          total_productos_analizados: productsToOptimize.length,
+          eficiencia_promedio: recursosUsados.length > 0 ? Math.round(
+            (recursosUsados.reduce((sum, r) => sum + r.porcentaje_uso, 0) / recursosUsados.length) * 100
+          ) / 100 : 0
+        },
+        modelo_lp: lp
+      };
+    } else {
+      return {
+        success: false,
+        status: results.Status,
+        message: 'No se encontró solución óptima. Revisa las restricciones del modelo.',
+        diagnostico: {
+          productos_analizados: productsToOptimize.length,
+          restricciones_recursos: constraintsAdded,
+          restricciones_demanda: demandasAdded,
+          posibles_causas: [
+            constraintsAdded === 0 ? 'No hay restricciones de recursos configuradas' : null,
+            'Las restricciones pueden ser inconsistentes',
+            'Verifica que la tabla producto_recursos tenga datos válidos'
+          ].filter(Boolean)
+        },
+        modelo_lp: lp
+      };
+    }
+
+  } catch (error) {
+    console.error('❌ Error en optimización:', error);
+    return {
+      success: false,
+      message: 'Error: ' + error.message,
+      stack: error.stack
+    };
+  }
+}
+
+/**
+ * Analizar el efecto de cambiar coeficientes de ganancia
+ */
+async function analizarSensibilidadCoeficientes() {
+  const resultadoBase = await optimizarGananciasYCostos();
+  
+  if (!resultadoBase.success) {
+    return resultadoBase;
+  }
+
+  return {
+    success: true,
+    analisis: 'Sensibilidad de coeficientes de ganancia',
+    resultado_base: {
+      z_optimo: resultadoBase.valor_optimo_z,
+      ecuacion: resultadoBase.ecuacion.solucion_optima,
+      productos: resultadoBase.produccion.map(p => ({
+        nombre: p.nombre,
+        coeficiente: p.coeficiente_ci,
+        cantidad: p.cantidad_producir,
+        contribucion: p.ganancia_total
+      }))
+    },
+    interpretacion: {
+      valor_z: `El valor óptimo Z = ${resultadoBase.valor_optimo_z} Bs representa la máxima ganancia posible`,
+      productos_optimos: `Se deben producir ${resultadoBase.produccion.length} productos diferentes`,
+      mejor_producto: resultadoBase.produccion[0] ? {
+        nombre: resultadoBase.produccion[0].nombre,
+        coeficiente: resultadoBase.produccion[0].coeficiente_ci,
+        mensaje: `${resultadoBase.produccion[0].nombre} tiene el mayor coeficiente de ganancia`
+      } : null
+    }
+  };
+}
+
+
 
 
 async function optimizarProduccion() {
@@ -449,8 +855,12 @@ async function planificarProduccionPeriodo(dias) {
 }
 
 
+
+
 export { 
   optimizarProduccion, 
   analizarSensibilidad,
-  planificarProduccionPeriodo 
+  planificarProduccionPeriodo,
+  optimizarGananciasYCostos,
+  analizarSensibilidadCoeficientes 
 };

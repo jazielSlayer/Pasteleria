@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:3200
+@baseUrl = http://localhost:3400
 
 ###
 
@@ -12,13 +12,13 @@ GET {{baseUrl}}/historiales/1
 
 ###
 # Crear un nuevo historial
-POST {{baseUrl}}/historiales
+POST {{baseUrl}}/maximizar-ganancias
 Content-Type: application/json
 
 {
-  "entidad_afectada": "estudiante",
-  "descripcion_operacion": "Creación de estudiante",
-  "fecha_operacion": "2025-09-07 12:00:00",
+  "entidad_afectada": "optimizacion_produccion",
+  "descripcion_operacion": "Optimización de ganancias - Pastelería",
+  "fecha_operacion": "2025-11-30 14:30:00",
   "usuario": "admin"
 }
 

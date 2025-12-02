@@ -2,7 +2,9 @@ import express from 'express';
 import { 
   optimizarProduccion, 
   analizarSensibilidad,
-  planificarProduccionPeriodo 
+  planificarProduccionPeriodo,
+  optimizarGananciasYCostos,
+  analizarSensibilidadCoeficientes
 } from '../controlers/ProduccionOptima.js';
 
 const router = express.Router();
@@ -165,6 +167,57 @@ router.get('/health', (req, res) => {
     status: 'active',
     timestamp: new Date().toISOString()
   });
+});
+
+router.post('/maximizar-ganancias', async (req, res) => {
+  try {
+    const resultado = await optimizarGananciasYCostos();
+    
+    if (resultado.success) {
+      res.status(200).json({
+        success: true,
+        data: resultado,
+        mensaje: 'Optimización completada exitosamente'
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: resultado.message
+      });
+    }
+  } catch (error) {
+    console.error('Error en ruta /maximizar-ganancias:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error del servidor',
+      error: error.message
+    });
+  }
+});
+
+router.get('/analizar-coeficientes', async (req, res) => {
+  try {
+    const resultado = await analizarSensibilidadCoeficientes();
+    
+    if (resultado.success) {
+      res.status(200).json({
+        success: true,
+        data: resultado
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: resultado.message
+      });
+    }
+  } catch (error) {
+    console.error('Error en ruta /analizar-coeficientes:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error del servidor',
+      error: error.message
+    });
+  }
 });
 
 export default router;

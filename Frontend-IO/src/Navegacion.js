@@ -15,7 +15,7 @@ import {
   GiFactory 
 } from "react-icons/gi";
 import { FaTruck, FaPercentage } from "react-icons/fa";
-import logo from "./Navegacion-Componets/Config/logousb.png";
+import logo from "./Navegacion-Componets/Config/LogoMichellin.png";
 
 function Navegacion() {
   const [collapsed, setCollapsed] = useState(false);

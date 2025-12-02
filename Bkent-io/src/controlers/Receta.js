@@ -40,7 +40,11 @@ export const getReceta = async (req, res) => {
         // Primero buscar la receta (por receta_id o producto_id)
         const [recetaRows] = await pool.query(`
             SELECT 
-                r.*,
+                r.receta_id,
+                r.producto_id,
+                r.porciones_salida,
+                r.costo_mano_obra,
+                r.costo_energia,
                 p.codigo,
                 p.nombre AS producto_nombre,
                 p.precio_venta,
@@ -76,9 +80,30 @@ export const getReceta = async (req, res) => {
             ORDER BY mp.nombre
         `, [receta.receta_id]);
 
-        const costo_materias = ingredientes.reduce((sum, i) => sum + (i.costo_ingrediente || 0), 0);
-        const costo_total = costo_materias + parseFloat(receta.costo_mano_obra || 0) + parseFloat(receta.costo_energia || 0);
-        const costo_por_porcion = receta.porciones_salida > 0 ? costo_total / receta.porciones_salida : 0;
+        // Convertir explícitamente a números
+        const costo_materias = ingredientes.reduce((sum, i) => {
+            return sum + parseFloat(i.costo_ingrediente || 0);
+        }, 0);
+        
+        const costo_mano_obra = parseFloat(receta.costo_mano_obra || 0);
+        const costo_energia = parseFloat(receta.costo_energia || 0);
+        const costo_total = costo_materias + costo_mano_obra + costo_energia;
+        const porciones = parseInt(receta.porciones_salida) || 1;
+        const costo_por_porcion = porciones > 0 ? costo_total / porciones : 0;
+        const precio_venta = parseFloat(receta.precio_venta);
+        const margen_por_porcion = precio_venta - costo_por_porcion;
+
+        // Convertir ingredientes para la respuesta
+        const ingredientesFormateados = ingredientes.map(ing => ({
+            id: ing.id,
+            materia_id: ing.materia_id,
+            codigo: ing.codigo,
+            materia_nombre: ing.materia_nombre,
+            unidad: ing.unidad,
+            cantidad: parseFloat(ing.cantidad),
+            costo_promedio: parseFloat(ing.costo_promedio),
+            costo_ingrediente: parseFloat(ing.costo_ingrediente)
+        }));
 
         res.json({
             receta_id: receta.receta_id,
@@ -86,17 +111,17 @@ export const getReceta = async (req, res) => {
             producto: {
                 codigo: receta.codigo,
                 nombre: receta.producto_nombre,
-                precio_venta: parseFloat(receta.precio_venta),
-                es_por_peso: receta.es_por_peso
+                precio_venta: precio_venta,
+                es_por_peso: Boolean(receta.es_por_peso)
             },
-            porciones_salida: receta.porciones_salida,
-            costo_mano_obra: parseFloat(receta.costo_mano_obra || 0),
-            costo_energia: parseFloat(receta.costo_energia || 0),
+            porciones_salida: porciones,
+            costo_mano_obra: parseFloat(costo_mano_obra.toFixed(2)),
+            costo_energia: parseFloat(costo_energia.toFixed(2)),
             costo_materias_prima: parseFloat(costo_materias.toFixed(4)),
             costo_total_produccion: parseFloat(costo_total.toFixed(4)),
             costo_por_porcion: parseFloat(costo_por_porcion.toFixed(4)),
-            margen_por_porcion: parseFloat((receta.precio_venta - costo_por_porcion).toFixed(4)),
-            ingredientes
+            margen_por_porcion: parseFloat(margen_por_porcion.toFixed(4)),
+            ingredientes: ingredientesFormateados
         });
 
     } catch (error) {
